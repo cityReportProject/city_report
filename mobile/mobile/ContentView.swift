@@ -527,7 +527,7 @@ struct ProfileView: View {
         message = nil
         let profile = UserProfile(name: name, email: email, pushNotificationsEnabled: pushEnabled)
         do {
-            _ = try await UserProfileService.shared.create(profile)
+            try await UserProfileService.shared.create(profile)
             message = "Perfil salvo com sucesso!"
             isError = false
         } catch {

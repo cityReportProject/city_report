@@ -24,7 +24,7 @@ final class ReportService {
     // MARK: - Listar todos (GET /getreports)
 
     func fetchAll() async throws -> [Report] {
-        return try await client.request(path: "/getreports")
+        return try await client.request(path: "/getreport")
     }
 
     // MARK: - Criar (POST /postreport)

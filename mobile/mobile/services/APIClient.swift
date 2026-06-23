@@ -38,7 +38,7 @@ enum APIError: LocalizedError {
 final class APIClient {
 
     // MARK: - Configuração — altere o IP para o da máquina com Node-RED
-    static var baseURL = "http://192.168.0.100:1880"
+    static var baseURL = "http://192.168.128.29:1880"
 
     static let shared = APIClient()
     private init() {}
@@ -51,13 +51,13 @@ final class APIClient {
 
     let encoder: JSONEncoder = {
         let e = JSONEncoder()
-        e.dateEncodingStrategy = .iso8601
+//        e.dateEncodingStrategy = .iso8601
         return e
     }()
 
     let decoder: JSONDecoder = {
         let d = JSONDecoder()
-        d.dateDecodingStrategy = .iso8601
+//        d.dateDecodingStrategy = .iso8601
         return d
     }()
 
@@ -92,6 +92,35 @@ final class APIClient {
 
         do { return try decoder.decode(T.self, from: data) }
         catch { throw APIError.decodingFailed(error) }
+    }
+    
+    func request(
+        path: String,
+        method: String = "GET",
+        body: Encodable? = nil
+    ) async throws {
+        guard let url = URL(string: APIClient.baseURL + path) else {
+            throw APIError.invalidURL
+        }
+
+        var req = URLRequest(url: url)
+        req.httpMethod = method
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if let body {
+            do { req.httpBody = try JSONEncoder().encode(body) }
+//            do { req.httpBody = try encoder.encode(AnyEncodable(body)) }
+            catch { throw APIError.encodingFailed(error) }
+        }
+
+        let (data, response): (Data, URLResponse)
+        do { (data, response) = try await session.data(for: req) }
+        catch { throw APIError.networkError(error) }
+
+        if let http = response as? HTTPURLResponse,
+           !(200...299).contains(http.statusCode) {
+            throw APIError.unexpectedStatusCode(http.statusCode, data)
+        }
     }
 
     // MARK: - Request sem corpo de resposta esperado
