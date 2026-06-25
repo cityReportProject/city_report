@@ -1,21 +1,16 @@
 // UserProfileService.swift
 //
-// CRUD de UserProfile — endpoints reais do Node-RED (roport_city)
+// CRUD de UserProfile contra o Node-RED + Cloudant.
 //
-//   GET    /getuser                          → [UserProfileRecord]
-//   POST   /postuser   { UserProfileRecord } → resposta do Node-RED
-//   PUT    /putuser    { UserProfileRecord } → resposta do Node-RED
-//   DELETE /deleteuser { "deviceID": "..." } → resposta do Node-RED
-//
-// Como não há autenticação, o dispositivo é identificado por deviceID
-// (UIDevice.identifierForVendor) embutido no payload JSON.
+// Mesma lógica do ReportService: POST/PUT devolvem envelope Cloudant,
+// não o objeto salvo. Usamos resposta otimista.
 
 import Foundation
 #if canImport(UIKit)
 import UIKit
 #endif
 
-// MARK: - Modelo de transferência (inclui deviceID no JSON)
+// MARK: - DTO com deviceID embutido (enviado ao Node-RED)
 
 struct UserProfileRecord: Codable {
     var deviceID: String
@@ -60,10 +55,30 @@ final class UserProfileService {
         #endif
     }
 
-    // MARK: - Listar todos os perfis (GET /getuser)
+    // MARK: - Listar todos (GET /getuser)
 
     func fetchAll() async throws -> [UserProfileRecord] {
-        return try await client.request(path: "/getuser")
+        let data = try await client.requestRaw(path: "/getuser", method: "GET")
+
+        // 1) Array direto
+        if let records = try? client.decoder.decode([UserProfileRecord].self, from: data) {
+            return records
+        }
+
+        // 2) Envelope Cloudant { rows: [{ doc: UserProfileRecord }] }
+        if let envelope = try? client.decoder.decode(CloudantListResponse<UserProfileRecord>.self, from: data) {
+            return envelope.items
+        }
+
+        // 3) Array vazio (banco ainda sem documentos)
+        if let empty = try? client.decoder.decode([String].self, from: data), empty.isEmpty {
+            return []
+        }
+
+        throw APIError.decodingFailed(
+            NSError(domain: "UserProfileService", code: 0,
+                    userInfo: [NSLocalizedDescriptionKey: "Formato de resposta desconhecido em /getuser"])
+        )
     }
 
     // MARK: - Buscar perfil deste dispositivo
@@ -73,7 +88,7 @@ final class UserProfileService {
         return all.first(where: { $0.deviceID == deviceID })?.asUserProfile
     }
 
-    // MARK: - Criar perfil (POST /postuser)
+    // MARK: - Criar (POST /postuser)
 
     @discardableResult
     func create(_ profile: UserProfile) async throws -> UserProfileRecord {
@@ -81,10 +96,21 @@ final class UserProfileService {
             throw ProfileValidationError.invalidEmail
         }
         let record = UserProfileRecord(deviceID: deviceID, profile: profile)
-        return try await client.request(path: "/postuser", method: "POST", body: record)
+        let data = try await client.requestRaw(path: "/postuser", method: "POST", body: record)
+
+        // Valida confirmação do Cloudant (ignora erro de decodificação — o objeto foi salvo)
+        if let response = try? client.decoder.decode(CloudantWriteResponse.self, from: data),
+           response.isOk == false {
+            throw APIError.decodingFailed(
+                NSError(domain: "UserProfileService", code: 0,
+                        userInfo: [NSLocalizedDescriptionKey: "Cloudant não confirmou a gravação."])
+            )
+        }
+
+        return record
     }
 
-    // MARK: - Atualizar perfil (PUT /putuser)
+    // MARK: - Atualizar (PUT /putuser)
 
     @discardableResult
     func update(_ profile: UserProfile) async throws -> UserProfileRecord {
@@ -92,10 +118,20 @@ final class UserProfileService {
             throw ProfileValidationError.invalidEmail
         }
         let record = UserProfileRecord(deviceID: deviceID, profile: profile)
-        return try await client.request(path: "/putuser", method: "PUT", body: record)
+        let data = try await client.requestRaw(path: "/putuser", method: "PUT", body: record)
+
+        if let response = try? client.decoder.decode(CloudantWriteResponse.self, from: data),
+           response.isOk == false {
+            throw APIError.decodingFailed(
+                NSError(domain: "UserProfileService", code: 0,
+                        userInfo: [NSLocalizedDescriptionKey: "Cloudant não confirmou a atualização."])
+            )
+        }
+
+        return record
     }
 
-    // MARK: - Remover perfil (DELETE /deleteuser)
+    // MARK: - Remover (DELETE /deleteuser)
 
     func delete() async throws {
         let body = DeleteUserBody(deviceID: deviceID)
