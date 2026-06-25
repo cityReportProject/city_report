@@ -1,8 +1,4 @@
-// Report.swift
-// mobile
-//
-// Histórias de usuário: US01–US06 (criação), US07–US11 (mapa),
-//                       US12–US14 (credibilidade), US15–US19 (gestão prefeitura)
+// Model para report de usuario
 
 import Foundation
 

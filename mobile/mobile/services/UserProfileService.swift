@@ -60,17 +60,17 @@ final class UserProfileService {
     func fetchAll() async throws -> [UserProfileRecord] {
         let data = try await client.requestRaw(path: "/getuser", method: "GET")
 
-        // 1) Array direto
+        // Array direto
         if let records = try? client.decoder.decode([UserProfileRecord].self, from: data) {
             return records
         }
 
-        // 2) Envelope Cloudant { rows: [{ doc: UserProfileRecord }] }
+        // Envelope Cloudant { rows: [{ doc: UserProfileRecord }] }
         if let envelope = try? client.decoder.decode(CloudantListResponse<UserProfileRecord>.self, from: data) {
             return envelope.items
         }
 
-        // 3) Array vazio (banco ainda sem documentos)
+        // Array vazio (banco ainda sem documentos)
         if let empty = try? client.decoder.decode([String].self, from: data), empty.isEmpty {
             return []
         }

@@ -1,8 +1,3 @@
-// VoteRegistryService.swift
-//
-// Controle local de votos (US12) — um voto por reporte por dispositivo.
-// Usa UserDefaults para persistência local e delega ao ReportService (PUT /putreport).
-
 import Foundation
 
 final class VoteRegistryService {
