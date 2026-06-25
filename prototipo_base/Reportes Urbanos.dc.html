@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    @keyframes pulse-loc {
+      0%,100% { box-shadow:0 0 0 6px rgba(45,125,210,.22),0 0 0 3px rgba(45,125,210,.38) }
+      50%      { box-shadow:0 0 0 12px rgba(45,125,210,.05),0 0 0 3px rgba(45,125,210,.38) }
+    }
+    @keyframes pulse-pin {
+      0%,100% { transform:scale(1);opacity:.6 }
+      50%      { transform:scale(1.5);opacity:0 }
+    }
+    @keyframes sheet-up {
+      from { transform:translateY(100%) }
+      to   { transform:translateY(0) }
+    }
+    @keyframes fade-bg {
+      from { opacity:0 }
+      to   { opacity:1 }
+    }
+    @keyframes slide-right {
+      from { transform:translateX(100%) }
+      to   { transform:translateX(0) }
+    }
+  </style>
+</helmet>
+
+<div style="min-height:100vh;background:#0F172A;display:flex;align-items:center;justify-content:center;padding:40px 20px">
+  <x-import component="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+    <div style="width:100%;height:100%;position:relative;overflow:hidden">
+
+      <!-- ═══ MAPA PRINCIPAL ═══ -->
+      <div data-screen-label="Mapa Principal" style="position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.84) 2px,transparent 2px) 0 0/60px 60px,linear-gradient(90deg,rgba(255,255,255,.84) 2px,transparent 2px) 0 0/60px 60px,linear-gradient(rgba(218,212,200,.5) 1px,transparent 1px) 0 0/20px 20px,linear-gradient(90deg,rgba(218,212,200,.5) 1px,transparent 1px) 0 0/20px 20px,#EDE8D8">
+
+        <!-- Blocos urbanos -->
+        <div style="position:absolute;left:28px;top:88px;width:96px;height:65px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:152px;top:93px;width:88px;height:80px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:265px;top:83px;width:108px;height:65px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:32px;top:198px;width:76px;height:72px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:184px;top:210px;width:88px;height:70px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:282px;top:195px;width:100px;height:80px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:158px;top:298px;width:112px;height:94px;background:rgba(162,208,152,.48);border-radius:3px"></div>
+        <div style="position:absolute;left:28px;top:353px;width:108px;height:78px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:280px;top:348px;width:100px;height:88px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:30px;top:473px;width:118px;height:70px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:190px;top:478px;width:82px;height:82px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:296px;top:466px;width:90px;height:90px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:28px;top:588px;width:100px;height:66px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:180px;top:594px;width:88px;height:60px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:290px;top:582px;width:96px;height:78px;background:rgba(208,202,190,.55);border-radius:2px"></div>
+        <div style="position:absolute;left:0;top:546px;width:70px;height:114px;background:rgba(160,192,220,.44);border-radius:0 3px 3px 0"></div>
+
+        <!-- Dark mode overlay no mapa -->
+        <sc-if value="{{ darkMode }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(8,14,28,.62);z-index:3;pointer-events:none;transition:opacity .3s"></div>
+        </sc-if>
+
+        <!-- PINs -->
+        <sc-if value="{{ showPin1 }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;left:82px;top:189px;display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:5" onClick="{{ openPin1 }}">
+            <div style="position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
+              <div style="position:absolute;inset:0;border-radius:50%;border:2.5px solid rgba(220,53,69,.45);animation:pulse-pin 2s ease-in-out infinite"></div>
+              <div style="width:28px;height:28px;border-radius:50%;background:#DC3545;border:2.5px solid white;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line></svg>
+              </div>
+            </div>
+            <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #DC3545;margin-top:-2px"></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showPin2 }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;left:308px;top:188px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3));cursor:pointer;z-index:5" onClick="{{ openPin2 }}">
+            <div style="width:28px;height:28px;border-radius:50%;background:#DC3545;border:2.5px solid white;display:flex;align-items:center;justify-content:center">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline></svg>
+            </div>
+            <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #DC3545;margin-top:-1px"></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showPin3 }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;left:144px;top:401px;display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:5" onClick="{{ openPin3 }}">
+            <div style="position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
+              <div style="position:absolute;inset:0;border-radius:50%;border:2.5px solid rgba(220,53,69,.45);animation:pulse-pin 2s ease-in-out infinite"></div>
+              <div style="width:28px;height:28px;border-radius:50%;background:#DC3545;border:2.5px solid white;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M1.5 12c2-2.5 3.5-2.5 5 0s3.5 2.5 5 0 3.5-2.5 5 0 3.5-2.5 5 0"></path><path d="M1.5 17c2-2.5 3.5-2.5 5 0s3.5 2.5 5 0 3.5-2.5 5 0 3.5-2.5 5 0"></path></svg>
+              </div>
+            </div>
+            <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #DC3545;margin-top:-2px"></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showPin4 }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;left:226px;top:216px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3));cursor:pointer;z-index:5" onClick="{{ openPin4 }}">
+            <div style="width:28px;height:28px;border-radius:50%;background:#F59E0B;border:2.5px solid white;display:flex;align-items:center;justify-content:center">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
+            </div>
+            <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #F59E0B;margin-top:-1px"></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showPin5 }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;left:64px;top:373px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3));cursor:pointer;z-index:5" onClick="{{ openPin5 }}">
+            <div style="width:28px;height:28px;border-radius:50%;background:#F59E0B;border:2.5px solid white;display:flex;align-items:center;justify-content:center">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M7 20V4M17 20V4M7 12h10"></path></svg>
+            </div>
+            <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #F59E0B;margin-top:-1px"></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showPin6 }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;left:280px;top:436px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3));cursor:pointer;z-index:5" onClick="{{ openPin6 }}">
+            <div style="width:28px;height:28px;border-radius:50%;background:#F59E0B;border:2.5px solid white;display:flex;align-items:center;justify-content:center">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+            </div>
+            <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #F59E0B;margin-top:-1px"></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showPin7 }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;left:166px;top:305px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3));cursor:pointer;z-index:5" onClick="{{ openPin7 }}">
+            <div style="width:28px;height:28px;border-radius:50%;background:#22C55E;border:2.5px solid white;display:flex;align-items:center;justify-content:center">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            </div>
+            <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #22C55E;margin-top:-1px"></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showPin8 }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;left:350px;top:357px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3));cursor:pointer;z-index:5" onClick="{{ openPin8 }}">
+            <div style="width:28px;height:28px;border-radius:50%;background:#22C55E;border:2.5px solid white;display:flex;align-items:center;justify-content:center">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M17 8C8 10 5.9 16.17 3.82 22h3.86c.8-2.31 4-7.5 10.14-7.5z"></path><path d="M17 8c.34-.97.53-1.97.53-3C17.53 2.18 15.45 1 12 1c0 4.97-3 6-3 9"></path></svg>
+            </div>
+            <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #22C55E;margin-top:-1px"></div>
+          </div>
+        </sc-if>
+
+        <!-- Localização do usuário -->
+        <div style="position:absolute;left:186px;top:447px;width:22px;height:22px;border-radius:50%;background:#2D7DD2;border:3px solid white;animation:pulse-loc 2.2s ease-in-out infinite;z-index:6"></div>
+
+        <!-- Search bar -->
+        <div style="{{ mapGlassStyle }};position:absolute;left:16px;right:72px;top:72px;height:52px;border-radius:26px;box-shadow:0 2px 18px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.12);display:flex;align-items:center;padding:0 16px;gap:10px;z-index:10">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{ dm.iconStroke }}" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <span style="flex:1;color:{{ dm.text2 }};font-size:15px;font-family:-apple-system,system-ui">Buscar endereço...</span>
+        </div>
+
+        <!-- Sino -->
+        <div onClick="{{ openNotifications }}" style="{{ mapGlassStyle }};position:absolute;right:16px;top:72px;width:52px;height:52px;border-radius:50%;box-shadow:0 2px 18px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;z-index:10;cursor:pointer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{ dm.accentStroke }}" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <div style="position:absolute;top:11px;right:11px;width:9px;height:9px;border-radius:50%;background:#DC3545;border:1.5px solid white"></div>
+        </div>
+
+        <!-- Filtros -->
+        <div style="position:absolute;top:134px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:7px;z-index:8;pointer-events:none">
+          <div style="display:flex;align-items:center;gap:8px;pointer-events:all">
+            <div style="{{ filterStyleAlta }}" onClick="{{ setFilterAlta }}">Alta</div>
+            <div style="{{ filterStyleMedia }}" onClick="{{ setFilterMedia }}">Média</div>
+            <div style="{{ filterStyleBaixa }}" onClick="{{ setFilterBaixa }}">Baixa</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;pointer-events:all">
+            <div style="{{ filterStatusStyle }}" onClick="{{ cycleStatus }}">{{ filterStatusLabel }}</div>
+            <div onClick="{{ openCatFilter }}" style="{{ catFilterBtnStyle }}">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"></line><line x1="8" y1="12" x2="16" y2="12"></line><line x1="11" y1="18" x2="13" y2="18"></line></svg>
+              {{ catFilterLabel }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Sheet filtro categoria -->
+        <sc-if value="{{ showCatFilter }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ closeCatFilter }}" style="position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:15;animation:fade-bg .2s ease both"></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;background:{{ dm.sheetBg }};border-radius:20px 20px 0 0;z-index:16;animation:sheet-up .25s cubic-bezier(.32,1,.23,1) both;padding:14px 16px 30px">
+            <div style="display:flex;justify-content:center;padding-bottom:10px"><div style="width:36px;height:4px;border-radius:2px;background:{{ dm.handleColor }}"></div></div>
+            <div style="font:700 14px 'Sora',-apple-system;color:{{ dm.text1 }};margin-bottom:12px">Filtrar por categoria</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+              <sc-for list="{{ catFilterChips }}" as="chip" hint-placeholder-count="7">
+                <div style="{{ chip.style }}" onClick="{{ chip.toggle }}">{{ chip.label }}</div>
+              </sc-for>
+            </div>
+            <div onClick="{{ closeCatFilter }}" style="height:46px;border-radius:23px;background:#1A4C8C;display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <span style="font:700 14px 'Sora',-apple-system;color:white">Aplicar</span>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- Botão lista -->
+        <div onClick="{{ openNearby }}" style="{{ mapGlassStyle }};position:absolute;left:16px;bottom:138px;width:48px;height:48px;border-radius:50%;box-shadow:0 2px 18px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;z-index:10;cursor:pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ dm.accentStroke }}" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+        </div>
+
+        <!-- Botão localização -->
+        <div style="{{ mapGlassStyle }};position:absolute;right:16px;bottom:138px;width:48px;height:48px;border-radius:50%;box-shadow:0 2px 18px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;z-index:10">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{ dm.accentStroke }}" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>
+        </div>
+
+        <!-- Dock -->
+        <div style="{{ dockStyle }};position:absolute;bottom:46px;left:50%;transform:translateX(-50%);height:68px;border-radius:34px;box-shadow:0 4px 24px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.1);display:flex;align-items:center;padding:0 14px;gap:8px;z-index:10">
+          <div style="width:48px;height:48px;border-radius:50%;background:{{ dm.iconBtnBg }};display:flex;align-items:center;justify-content:center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{ dm.accentStroke }}" stroke-width="2" stroke-linecap="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+          </div>
+          <div onClick="{{ openForm }}" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2D7DD2,#1A4C8C);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(26,76,140,.45);cursor:pointer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          </div>
+          <div onClick="{{ openProfile }}" style="width:48px;height:48px;border-radius:50%;background:{{ dm.iconBtnBg }};display:flex;align-items:center;justify-content:center;cursor:pointer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="{{ dm.accentStroke }}"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"></path></svg>
+          </div>
+        </div>
+
+      </div><!-- /mapa -->
+
+      <!-- ═══ BOTTOM SHEET: Detalhe (US08, US13) ═══ -->
+      <sc-if value="{{ showSheet }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:20;animation:fade-bg .22s ease both"></div>
+        <div data-screen-label="Detalhe do Reporte" style="position:absolute;bottom:0;left:0;right:0;background:{{ dm.sheetBg }};border-radius:24px 24px 0 0;z-index:21;animation:sheet-up .30s cubic-bezier(.32,1,.23,1) both">
+          <div style="display:flex;justify-content:center;padding-top:10px;padding-bottom:2px"><div style="width:36px;height:4px;border-radius:2px;background:{{ dm.handleColor }}"></div></div>
+          <div onClick="{{ closeSheet }}" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:{{ dm.closeBtnBg }};display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="{{ dm.text2 }}" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </div>
+          <div style="padding:0 16px 10px;margin-top:8px">
+            <div style="font:700 17px/1.25 -apple-system;color:{{ dm.text1 }};margin-bottom:8px">{{ pinLabel }}</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <div style="display:inline-flex;align-items:center;height:22px;border-radius:11px;padding:0 9px;background:{{ pinColor }};color:white;font:600 11px -apple-system;white-space:nowrap">{{ pinUrgencyLabel }}</div>
+              <div style="display:inline-flex;align-items:center;height:22px;border-radius:11px;padding:0 9px;background:rgba(26,76,140,.15);color:#60A5FA;font:600 11px -apple-system;white-space:nowrap">{{ pinCategory }}</div>
+              <div style="display:inline-flex;align-items:center;height:22px;border-radius:11px;padding:0 9px;background:{{ statusBg }};color:{{ statusColor }};font:600 11px -apple-system;white-space:nowrap">{{ pinStatus }}</div>
+            </div>
+          </div>
+          <div style="padding:8px 16px;display:flex;align-items:center;gap:8px;border-top:1px solid {{ dm.border }}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{ dm.text3 }}" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span style="font:400 13px -apple-system;color:{{ dm.text2 }}">{{ pinAddress }}</span>
+          </div>
+          <div style="padding:8px 16px;border-top:1px solid {{ dm.border }}">
+            <p style="font:400 13px/1.55 -apple-system;color:{{ dm.text2 }};margin:0">{{ pinDesc }}</p>
+          </div>
+          <div style="padding:8px 16px;border-top:1px solid {{ dm.border }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font:500 11px -apple-system;color:{{ dm.text3 }}">Credibilidade da comunidade</span>
+              <span style="font:700 11px -apple-system;color:{{ pinCredColor }}">{{ pinVotes }} votos{{ pinHighCredLabel }}</span>
+            </div>
+            <div style="height:5px;border-radius:3px;background:{{ dm.inputBg }};overflow:hidden">
+              <div style="height:100%;width:{{ pinVotePct }};background:{{ pinCredBg }};border-radius:3px"></div>
+            </div>
+          </div>
+          <div style="padding:8px 16px;border-top:1px solid {{ dm.border }};display:flex;align-items:center;gap:8px">
+            <div style="width:22px;height:22px;border-radius:50%;background:{{ dm.inputBg }};display:flex;align-items:center;justify-content:center">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="{{ dm.text3 }}"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"></path></svg>
+            </div>
+            <span style="font:400 12px -apple-system;color:{{ dm.text2 }}">Cidadão · {{ pinTime }}</span>
+          </div>
+          <div style="display:flex;gap:10px;padding:10px 16px 28px">
+            <div onClick="{{ closeSheet }}" style="flex:1;height:46px;border-radius:23px;background:#1A4C8C;display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <span style="font:600 14px -apple-system;color:white">Confirmar problema</span>
+            </div>
+            <div style="flex:1;height:46px;border-radius:23px;background:{{ dm.closeBtnBg }};display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <span style="font:600 14px -apple-system;color:{{ dm.text1 }}">Compartilhar</span>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ═══ FORMULÁRIO (US03–US05) ═══ -->
+      <sc-if value="{{ showForm }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Novo Reporte" style="position:absolute;inset:0;background:{{ dm.screenBg }};z-index:20;animation:slide-right .30s cubic-bezier(.32,1,.23,1) both;display:flex;flex-direction:column">
+          <div style="flex-shrink:0;background:#1A4C8C;padding-top:54px;height:110px;display:flex;align-items:center;padding-left:16px;padding-right:16px;gap:14px">
+            <div onClick="{{ closeForm }}" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </div>
+            <span style="font:700 18px 'Sora',-apple-system;color:white;flex:1">Novo Reporte</span>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:18px">
+            <div>
+              <div style="font:600 13px 'Sora',-apple-system;color:{{ dm.label }};margin-bottom:10px">Categoria</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px">
+                <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="7">
+                  <div style="{{ cat.chipStyle }}" onClick="{{ cat.onClick }}">{{ cat.label }}</div>
+                </sc-for>
+              </div>
+            </div>
+            <div>
+              <div style="font:600 13px 'Sora',-apple-system;color:{{ dm.label }};margin-bottom:10px">Nível de urgência</div>
+              <div style="display:flex;gap:8px">
+                <div style="{{ urgStyleBaixa }}" onClick="{{ setUrgBaixa }}"><div style="width:7px;height:7px;border-radius:50%;background:#22C55E;flex-shrink:0"></div>Baixa</div>
+                <div style="{{ urgStyleMedia }}" onClick="{{ setUrgMedia }}"><div style="width:7px;height:7px;border-radius:50%;background:#F59E0B;flex-shrink:0"></div>Média</div>
+                <div style="{{ urgStyleAlta }}" onClick="{{ setUrgAlta }}"><div style="width:7px;height:7px;border-radius:50%;background:#DC3545;flex-shrink:0"></div>Alta</div>
+              </div>
+              <div style="margin-top:7px;font:400 11px/1.45 -apple-system;color:{{ dm.text2 }};min-height:16px">{{ urgHint }}</div>
+            </div>
+            <div>
+              <div style="font:600 13px 'Sora',-apple-system;color:{{ dm.label }};margin-bottom:8px">Título</div>
+              <div style="background:{{ dm.inputBg }};border-radius:12px;border:1.5px solid {{ dm.inputBorder }};height:46px;display:flex;align-items:center;padding:0 14px">
+                <span style="font:400 14px -apple-system;color:{{ dm.text3 }}">Ex: Buraco na calçada...</span>
+              </div>
+            </div>
+            <div>
+              <div style="font:600 13px 'Sora',-apple-system;color:{{ dm.label }};margin-bottom:8px">Descrição</div>
+              <div style="background:{{ dm.inputBg }};border-radius:12px;border:1.5px solid {{ dm.inputBorder }};min-height:80px;padding:12px 14px;font:400 14px/1.55 -apple-system;color:{{ dm.text3 }}">Descreva o problema em detalhes...</div>
+            </div>
+            <div>
+              <div style="font:600 13px 'Sora',-apple-system;color:{{ dm.label }};margin-bottom:8px">Localização</div>
+              <div style="background:{{ dm.inputBg }};border-radius:12px;border:1.5px solid {{ dm.inputBorder }};height:46px;display:flex;align-items:center;padding:0 14px;gap:10px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A4C8C" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span style="font:400 13px -apple-system;color:{{ dm.text1 }};flex:1">Rua das Flores, 142 — SP</span>
+                <div style="cursor:pointer;font:600 12px 'Sora',-apple-system;color:#1A4C8C;background:rgba(26,76,140,.12);border-radius:8px;padding:4px 10px;white-space:nowrap;flex-shrink:0">Alterar</div>
+              </div>
+            </div>
+          </div>
+          <div style="flex-shrink:0;padding:12px 16px 34px;background:{{ dm.screenBg }};border-top:1px solid {{ dm.border }}">
+            <div onClick="{{ submitForm }}" style="width:100%;height:52px;border-radius:26px;background:linear-gradient(135deg,#2D7DD2,#1A4C8C);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(26,76,140,.35)">
+              <span style="font:700 16px -apple-system;color:white">Enviar Reporte</span>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ═══ CONFIRMAÇÃO (US06) ═══ -->
+      <sc-if value="{{ showConfirmation }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Confirmação" style="position:absolute;inset:0;background:{{ dm.screenBg }};z-index:20;animation:slide-right .30s cubic-bezier(.32,1,.23,1) both;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center">
+          <div style="width:76px;height:76px;border-radius:50%;background:rgba(34,197,94,.14);display:flex;align-items:center;justify-content:center;margin-bottom:18px">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div style="font:700 22px 'Sora',-apple-system;color:{{ dm.text1 }};margin-bottom:8px">Reporte enviado!</div>
+          <div style="font:400 13px/1.6 -apple-system;color:{{ dm.text2 }};margin-bottom:26px">Seu reporte foi registrado e já está visível no mapa público.</div>
+          <div style="background:{{ dm.cardBg }};border-radius:16px;padding:18px 20px;width:100%;margin-bottom:24px;text-align:left">
+            <div style="font:500 10px 'Sora',-apple-system;color:{{ dm.text3 }};text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Protocolo</div>
+            <div style="font:700 19px 'Sora',-apple-system;color:#60A5FA;margin-bottom:12px">{{ confirmProtocol }}</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">
+              <div style="height:22px;border-radius:11px;padding:0 10px;background:rgba(26,76,140,.2);color:#60A5FA;font:600 11px -apple-system;display:flex;align-items:center">{{ confirmCategory }}</div>
+              <div style="height:22px;border-radius:11px;padding:0 10px;background:{{ confirmUrgBg }};color:{{ confirmUrgColor }};font:600 11px -apple-system;display:flex;align-items:center">{{ confirmUrgLabel }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;padding-top:12px;border-top:1px solid {{ dm.border }}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="{{ dm.text3 }}" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              <span style="font:400 12px -apple-system;color:{{ dm.text2 }}">Rua das Flores, 142 — São Paulo</span>
+            </div>
+          </div>
+          <div onClick="{{ confirmToMap }}" style="width:100%;height:52px;border-radius:26px;background:linear-gradient(135deg,#2D7DD2,#1A4C8C);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(26,76,140,.35)">
+            <span style="font:700 15px 'Sora',-apple-system;color:white">Ver no mapa</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ═══ LISTA PRÓXIMOS (US11) ═══ -->
+      <sc-if value="{{ showNearby }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Próximos a Você" style="position:absolute;inset:0;background:{{ dm.screenBg }};z-index:20;animation:slide-right .30s cubic-bezier(.32,1,.23,1) both;display:flex;flex-direction:column">
+          <div style="flex-shrink:0;background:#1A4C8C;padding-top:54px;height:110px;display:flex;align-items:center;padding-left:16px;padding-right:16px;gap:14px">
+            <div onClick="{{ closeNearby }}" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </div>
+            <div style="flex:1">
+              <div style="font:700 18px 'Sora',-apple-system;color:white">Próximos a você</div>
+              <div style="font:400 12px -apple-system;color:rgba(255,255,255,.65);margin-top:2px">Raio de 5 km · 8 reportes</div>
+            </div>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:16px">
+            <sc-for list="{{ nearbyReports }}" as="rep" hint-placeholder-count="5">
+              <div onClick="{{ rep.open }}" style="background:{{ dm.cardBg }};border-radius:16px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,.12);cursor:pointer">
+                <div style="width:42px;height:42px;border-radius:12px;background:{{ rep.urgBg }};flex-shrink:0;display:flex;align-items:center;justify-content:center">
+                  {{ rep.icon }}
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:600 14px -apple-system;color:{{ dm.text1 }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ rep.label }}</div>
+                  <div style="font:400 12px -apple-system;color:{{ dm.text3 }};margin-top:2px">{{ rep.category }}</div>
+                </div>
+                <div style="text-align:right;flex-shrink:0">
+                  <div style="font:700 13px -apple-system;color:#60A5FA">{{ rep.dist }}</div>
+                  <div style="font:400 11px -apple-system;color:{{ dm.text3 }}">de distância</div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="height:34px"></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ═══ PERFIL (US21, US22, US23) ═══ -->
+      <sc-if value="{{ showProfile }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Perfil" style="position:absolute;inset:0;background:{{ dm.screenBg }};z-index:20;animation:slide-right .30s cubic-bezier(.32,1,.23,1) both;display:flex;flex-direction:column">
+          <div style="flex-shrink:0;background:#1A4C8C;padding-top:54px;height:110px;display:flex;align-items:center;padding-left:16px;padding-right:16px;gap:14px">
+            <div onClick="{{ closeProfile }}" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </div>
+            <span style="font:700 18px 'Sora',-apple-system;color:white;flex:1">Perfil</span>
+            <div onClick="{{ openEditProfile }}" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            </div>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:16px">
+            <!-- Avatar card -->
+            <div style="background:{{ dm.cardBg }};border-radius:20px;padding:22px 20px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 1px 4px rgba(0,0,0,.1);margin-bottom:12px">
+              <div style="width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#2D7DD2,#1A4C8C);display:flex;align-items:center;justify-content:center;margin-bottom:6px">
+                <span style="font:700 26px -apple-system;color:white">MC</span>
+              </div>
+              <div style="font:700 18px -apple-system;color:{{ dm.text1 }}">Maria Costa</div>
+              <div style="font:400 12px -apple-system;color:{{ dm.text2 }}">Vila Mariana · São Paulo, SP</div>
+              <div style="margin-top:7px;height:24px;border-radius:12px;padding:0 12px;background:rgba(26,76,140,.18);display:flex;align-items:center;font:500 11px -apple-system;color:#60A5FA">Membro desde jan/2024</div>
+              <div style="display:flex;width:100%;margin-top:14px;padding-top:14px;border-top:1px solid {{ dm.border }}">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border-right:1px solid {{ dm.border }}">
+                  <div style="font:700 20px -apple-system;color:{{ dm.text1 }}">12</div>
+                  <div style="font:400 11px -apple-system;color:{{ dm.text3 }}">Enviados</div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border-right:1px solid {{ dm.border }}">
+                  <div style="font:700 20px -apple-system;color:#22C55E">8</div>
+                  <div style="font:400 11px -apple-system;color:{{ dm.text3 }}">Resolvidos</div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+                  <div style="font:700 20px -apple-system;color:#F59E0B">4</div>
+                  <div style="font:400 11px -apple-system;color:{{ dm.text3 }}">Abertos</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modo Noturno -->
+            <div style="background:{{ dm.cardBg }};border-radius:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden">
+              <div style="padding:6px 16px;background:{{ dm.sectionBg }};border-bottom:1px solid {{ dm.border }}">
+                <span style="font:600 10px 'Sora',-apple-system;color:{{ dm.text3 }};text-transform:uppercase;letter-spacing:.07em">Aparência</span>
+              </div>
+              <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:34px;height:34px;border-radius:10px;background:{{ darkModeBg }};display:flex;align-items:center;justify-content:center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="{{ darkModeIcon }}" stroke="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                  </div>
+                  <div>
+                    <div style="font:600 14px -apple-system;color:{{ dm.text1 }}">Modo Noturno</div>
+                    <div style="font:400 12px -apple-system;color:{{ dm.text2 }};margin-top:2px">{{ darkModeHint }}</div>
+                  </div>
+                </div>
+                <div onClick="{{ toggleDarkMode }}" style="{{ darkToggleStyle }}">
+                  <div style="{{ darkThumbStyle }}"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notificações (US21) -->
+            <div style="background:{{ dm.cardBg }};border-radius:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden">
+              <div style="padding:6px 16px;background:{{ dm.sectionBg }};border-bottom:1px solid {{ dm.border }}">
+                <span style="font:600 10px 'Sora',-apple-system;color:{{ dm.text3 }};text-transform:uppercase;letter-spacing:.07em">Notificações</span>
+              </div>
+              <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid {{ dm.border }}">
+                <div>
+                  <div style="font:600 14px -apple-system;color:{{ dm.text1 }}">Push notifications</div>
+                  <div style="font:400 12px -apple-system;color:{{ dm.text2 }};margin-top:2px">Atualizações dos seus reportes</div>
+                </div>
+                <div onClick="{{ toggleNotif }}" style="{{ notifToggleStyle }}">
+                  <div style="{{ notifThumbStyle }}"></div>
+                </div>
+              </div>
+              <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
+                <div>
+                  <div style="font:600 14px -apple-system;color:{{ dm.text1 }}">Alertas próximos</div>
+                  <div style="font:400 12px -apple-system;color:{{ dm.text2 }};margin-top:2px">Reportes na sua vizinhança</div>
+                </div>
+                <div style="width:44px;height:26px;border-radius:13px;background:#E5E7EB;padding:3px;display:flex;align-items:center;cursor:pointer">
+                  <div style="width:20px;height:20px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Histórico (US22) -->
+            <div style="font:600 11px 'Sora',-apple-system;color:{{ dm.text3 }};text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;padding-left:2px">Meus Reportes</div>
+            <sc-for list="{{ profileReports }}" as="rep" hint-placeholder-count="3">
+              <div style="background:{{ dm.cardBg }};border-radius:16px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+                <div style="width:40px;height:40px;border-radius:12px;background:rgba(26,76,140,.15);flex-shrink:0;display:flex;align-items:center;justify-content:center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:600 13px -apple-system;color:{{ dm.text1 }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ rep.label }}</div>
+                  <div style="font:400 11px -apple-system;color:{{ dm.text3 }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px">{{ rep.address }}</div>
+                </div>
+                <div style="{{ rep.badgeStyle }}">{{ rep.status }}</div>
+              </div>
+            </sc-for>
+            <div style="height:34px"></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ═══ EDITAR PERFIL (US23) ═══ -->
+      <sc-if value="{{ showEditProfile }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Editar Perfil" style="position:absolute;inset:0;background:{{ dm.screenBg }};z-index:22;animation:slide-right .30s cubic-bezier(.32,1,.23,1) both;display:flex;flex-direction:column">
+          <div style="flex-shrink:0;background:#1A4C8C;padding-top:54px;height:110px;display:flex;align-items:center;padding-left:16px;padding-right:16px;gap:14px">
+            <div onClick="{{ closeEditProfile }}" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </div>
+            <span style="font:700 18px 'Sora',-apple-system;color:white;flex:1">Editar Perfil</span>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:24px 16px;display:flex;flex-direction:column;gap:20px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+              <div style="width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#2D7DD2,#1A4C8C);display:flex;align-items:center;justify-content:center">
+                <span style="font:700 26px -apple-system;color:white">MC</span>
+              </div>
+              <span style="font:500 13px 'Sora',-apple-system;color:#60A5FA;cursor:pointer">Alterar foto</span>
+            </div>
+            <div>
+              <div style="font:600 13px 'Sora',-apple-system;color:{{ dm.label }};margin-bottom:8px">Nome</div>
+              <div style="background:{{ dm.cardBg }};border-radius:12px;border:1.5px solid {{ dm.inputBorder }};height:48px;display:flex;align-items:center;padding:0 14px">
+                <span style="font:400 15px -apple-system;color:{{ dm.text1 }}">Maria Costa</span>
+              </div>
+            </div>
+            <div>
+              <div style="font:600 13px 'Sora',-apple-system;color:{{ dm.label }};margin-bottom:8px">E-mail</div>
+              <div style="background:{{ dm.cardBg }};border-radius:12px;border:1.5px solid {{ dm.inputBorder }};height:48px;display:flex;align-items:center;padding:0 14px">
+                <span style="font:400 15px -apple-system;color:{{ dm.text1 }}">maria.costa@email.com</span>
+              </div>
+            </div>
+            <div>
+              <div style="font:600 13px 'Sora',-apple-system;color:{{ dm.label }};margin-bottom:8px">Bairro</div>
+              <div style="background:{{ dm.cardBg }};border-radius:12px;border:1.5px solid {{ dm.inputBorder }};height:48px;display:flex;align-items:center;padding:0 14px">
+                <span style="font:400 15px -apple-system;color:{{ dm.text1 }}">Vila Mariana, São Paulo</span>
+              </div>
+            </div>
+          </div>
+          <div style="flex-shrink:0;padding:12px 16px 34px;background:{{ dm.screenBg }};border-top:1px solid {{ dm.border }}">
+            <div onClick="{{ closeEditProfile }}" style="width:100%;height:52px;border-radius:26px;background:linear-gradient(135deg,#2D7DD2,#1A4C8C);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(26,76,140,.35)">
+              <span style="font:700 16px -apple-system;color:white">Salvar alterações</span>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ═══ NOTIFICAÇÕES ═══ -->
+      <sc-if value="{{ showNotifications }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Notificações" style="position:absolute;inset:0;background:{{ dm.screenBg }};z-index:20;animation:slide-right .30s cubic-bezier(.32,1,.23,1) both;display:flex;flex-direction:column">
+          <div style="flex-shrink:0;background:#1A4C8C;padding-top:54px;height:110px;display:flex;align-items:center;padding-left:16px;padding-right:16px;gap:14px">
+            <div onClick="{{ closeNotifications }}" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </div>
+            <span style="font:700 18px 'Sora',-apple-system;color:white;flex:1">Notificações</span>
+            <div style="height:28px;border-radius:14px;padding:0 12px;background:rgba(255,255,255,.18);display:flex;align-items:center;font:500 12px 'Sora',-apple-system;color:white;cursor:pointer">Marcar lidas</div>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:16px">
+            <div style="font:600 11px 'Sora',-apple-system;color:{{ dm.text3 }};text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Recentes</div>
+            <sc-for list="{{ notifications }}" as="notif" hint-placeholder-count="5">
+              <div style="background:{{ dm.cardBg }};border-radius:16px;padding:14px;display:flex;align-items:flex-start;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:8px">
+                <div style="{{ notif.dotStyle }}"></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font:600 13px -apple-system;color:{{ dm.text1 }}">{{ notif.title }}</div>
+                  <div style="font:400 12px/1.5 -apple-system;color:{{ dm.text2 }};margin-top:2px">{{ notif.desc }}</div>
+                  <div style="font:400 11px -apple-system;color:{{ dm.text3 }};margin-top:4px">{{ notif.time }}</div>
+                </div>
+                <div style="{{ notif.unreadStyle }}"></div>
+              </div>
+            </sc-for>
+            <div style="height:34px"></div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 560, &quot;height&quot;: 960}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'map', selectedPin: null, formCat: null, formUrgency: null,
+    filter: 'all', filterCats: [], filterStatus: 'all', showCatFilter: false,
+    notifEnabled: true, confirmData: null, darkMode: false,
+  };
+
+  get dm() {
+    const dark = this.state.darkMode;
+    return {
+      screenBg:    dark ? '#0F172A' : '#F9FAFB',
+      sheetBg:     dark ? '#1E293B' : 'white',
+      cardBg:      dark ? '#1E293B' : 'white',
+      sectionBg:   dark ? '#0A1122' : '#F9FAFB',
+      inputBg:     dark ? '#334155' : '#F9FAFB',
+      inputBorder: dark ? 'rgba(255,255,255,.1)' : '#E5E7EB',
+      border:      dark ? 'rgba(255,255,255,.07)' : '#F3F4F6',
+      handleColor: dark ? '#4B5563' : '#D1D5DB',
+      closeBtnBg:  dark ? '#334155' : '#F3F4F6',
+      label:       dark ? '#94A3B8' : '#374151',
+      text1:       dark ? '#F1F5F9' : '#0F172A',
+      text2:       dark ? '#94A3B8' : '#6B7280',
+      text3:       dark ? '#64748B' : '#9CA3AF',
+      iconStroke:  dark ? '#94A3B8' : '#6B7280',
+      accentStroke:dark ? '#7DD3FC' : '#1A4C8C',
+      iconBtnBg:   dark ? 'rgba(125,211,252,.1)' : 'rgba(26,76,140,.08)',
+      glass:       dark ? 'rgba(15,23,42,.82)' : 'rgba(255,255,255,.72)',
+      glassBorder: dark ? 'rgba(255,255,255,.1)' : 'rgba(255,255,255,.88)',
+      dockGlass:   dark ? 'rgba(15,23,42,.85)' : 'rgba(255,255,255,.72)',
+    };
+  }
+
+  pinData(id) {
+    const pins = {
+      1: { urgency:'alta',  color:'#DC3545', label:'Buraco na calçada',    category:'Pavimentação',   address:'Rua das Flores, 142',      desc:'Buraco profundo cobrindo metade da calçada, representando risco para pedestres e ciclistas.',   status:'Aberto',    votes:14, time:'2h atrás' },
+      2: { urgency:'alta',  color:'#DC3545', label:'Poste sem iluminação', category:'Iluminação',     address:'Av. Paulista, 890',         desc:'Poste apagado há 3 dias. Trecho escuro à noite, gerando insegurança para os moradores.',        status:'Aberto',    votes:7,  time:'5h atrás' },
+      3: { urgency:'alta',  color:'#DC3545', label:'Alagamento na via',    category:'Esgoto',         address:'R. Vergueiro, 345',         desc:'Bueiro entupido causando acúmulo de água após chuvas leves. Via fica intransitável.',           status:'Aberto',    votes:21, time:'1h atrás' },
+      4: { urgency:'media', color:'#F59E0B', label:'Lixo acumulado',       category:'Coleta de Lixo', address:'R. Augusta, 210',           desc:'Lixo não coletado há 5 dias. Mau cheiro e risco de proliferação de vetores de doenças.',       status:'Aberto',    votes:5,  time:'1d atrás' },
+      5: { urgency:'media', color:'#F59E0B', label:'Calçada quebrada',     category:'Pavimentação',   address:'R. da Consolação, 78',      desc:'Piso levantado por raízes. Risco de queda para pedestres, especialmente idosos e cadeirantes.', status:'Aberto',    votes:9,  time:'3h atrás' },
+      6: { urgency:'media', color:'#F59E0B', label:'Bueiro entupido',      category:'Esgoto',         address:'Rua Bela Cintra, 55',        desc:'Bueiro bloqueado por folhas e detritos. Causa alagamento mesmo em chuvas moderadas.',            status:'Aberto',    votes:3,  time:'6h atrás' },
+      7: { urgency:'baixa', color:'#22C55E', label:'Pichação em muro',     category:'Outros',         address:'Praça da República',        desc:'Muro público com grafite não autorizado na lateral da praça, próximo ao coreto central.',        status:'Resolvido', votes:2,  time:'3d atrás' },
+      8: { urgency:'baixa', color:'#22C55E', label:'Galhos obstruindo',    category:'Meio Ambiente',  address:'Parque Estadual, acesso N', desc:'Galhos baixos obstruindo passagem de pedestres e ciclistas no acesso norte do parque.',         status:'Aberto',    votes:4,  time:'2d atrás' },
+    };
+    return pins[id];
+  }
+
+  pinVisible(id) {
+    const p = this.pinData(id);
+    const s = this.state;
+    if (s.filter !== 'all' && s.filter !== p.urgency) return false;
+    if (s.filterCats.length > 0 && !s.filterCats.includes(p.category)) return false;
+    if (s.filterStatus === 'open'     && p.status !== 'Aberto')    return false;
+    if (s.filterStatus === 'resolved' && p.status !== 'Resolvido') return false;
+    return true;
+  }
+
+  categoryIcon(category, color) {
+    const s = { width:16, height:16, viewBox:'0 0 24 24', fill:'none', stroke:color, strokeWidth:2.5, strokeLinecap:'round', strokeLinejoin:'round' };
+    const el = React.createElement.bind(React);
+    const svg = (children) => el('svg', s, ...children);
+    switch(category) {
+      case 'Pavimentação':
+        return svg([el('path',{key:'p',d:'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'}), el('line',{key:'l',x1:'12',y1:'9',x2:'12',y2:'13'})]);
+      case 'Iluminação':
+        return svg([el('polyline',{key:'p',points:'13 2 3 14 12 14 11 22 21 10 12 10 13 2'})]);
+      case 'Esgoto':
+        return svg([el('path',{key:'a',d:'M1.5 12c2-2.5 3.5-2.5 5 0s3.5 2.5 5 0 3.5-2.5 5 0 3.5-2.5 5 0'}), el('path',{key:'b',d:'M1.5 17c2-2.5 3.5-2.5 5 0s3.5 2.5 5 0 3.5-2.5 5 0 3.5-2.5 5 0'})]);
+      case 'Abastecimento de Água':
+        return svg([el('path',{key:'p',d:'M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z'})]);
+      case 'Coleta de Lixo':
+        return svg([el('polyline',{key:'a',points:'3 6 5 6 21 6'}), el('path',{key:'b',d:'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2'})]);
+      case 'Meio Ambiente':
+        return svg([el('path',{key:'a',d:'M17 8C8 10 5.9 16.17 3.82 22h3.86c.8-2.31 4-7.5 10.14-7.5z'}), el('path',{key:'b',d:'M17 8c.34-.97.53-1.97.53-3C17.53 2.18 15.45 1 12 1c0 4.97-3 6-3 9'})]);
+      default:
+        return svg([el('path',{key:'a',d:'M12 20h9'}), el('path',{key:'b',d:'M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z'})]);
+    }
+  }
+
+  badgeStyle(bg, color) {
+    return { display:'inline-flex', alignItems:'center', height:'22px', borderRadius:'11px', padding:'0 9px', background:bg, color:color, fontSize:'11px', fontFamily:'-apple-system,system-ui', fontWeight:'600', flexShrink:0, whiteSpace:'nowrap' };
+  }
+
+  statusProps(status) {
+    if (status === 'Resolvido') return { color:'#22C55E', bg:'rgba(34,197,94,.12)' };
+    if (status === 'Aberto')    return { color:'#60A5FA', bg:'rgba(26,76,140,.18)' };
+    return { color:'#9CA3AF', bg:'rgba(107,114,128,.1)' };
+  }
+
+  filterChipStyle(key) {
+    const active = this.state.filter === key;
+    const cols = { alta:'#DC3545', media:'#F59E0B', baixa:'#22C55E' };
+    const dm = this.dm;
+    const base = { height:'32px', borderRadius:'16px', padding:'0 16px', fontSize:'12px', fontFamily:"'Sora',-apple-system,system-ui", display:'flex', alignItems:'center', cursor:'pointer', whiteSpace:'nowrap' };
+    return active
+      ? { ...base, background:cols[key], color:'white', fontWeight:'700', boxShadow:'0 2px 10px rgba(0,0,0,.22)' }
+      : { ...base, background:dm.glass, color:dm.text1, fontWeight:'500', backdropFilter:'blur(14px)', WebkitBackdropFilter:'blur(14px)', border:'0.5px solid ' + dm.glassBorder, boxShadow:'0 1px 8px rgba(0,0,0,.1)' };
+  }
+
+  urgChipStyle(level) {
+    const active = this.state.formUrgency === level;
+    const dm = this.dm;
+    return active
+      ? { display:'flex', alignItems:'center', gap:'6px', height:'36px', borderRadius:'18px', padding:'0 14px', background:'#1A4C8C', color:'white', fontSize:'13px', fontFamily:'-apple-system,system-ui', fontWeight:'600', cursor:'pointer', flex:'1', justifyContent:'center' }
+      : { display:'flex', alignItems:'center', gap:'6px', height:'36px', borderRadius:'18px', padding:'0 14px', background:dm.inputBg, color:dm.text1, fontSize:'13px', fontFamily:'-apple-system,system-ui', fontWeight:'500', border:'1.5px solid ' + dm.inputBorder, cursor:'pointer', flex:'1', justifyContent:'center' };
+  }
+
+  catChipStyle(cat) {
+    const active = this.state.formCat === cat;
+    const dm = this.dm;
+    return active
+      ? { display:'flex', alignItems:'center', height:'34px', borderRadius:'17px', padding:'0 16px', background:'#1A4C8C', color:'white', fontSize:'13px', fontFamily:'-apple-system,system-ui', fontWeight:'600', cursor:'pointer', whiteSpace:'nowrap' }
+      : { display:'flex', alignItems:'center', height:'34px', borderRadius:'17px', padding:'0 16px', background:dm.inputBg, color:dm.text1, fontSize:'13px', fontFamily:'-apple-system,system-ui', fontWeight:'500', border:'1.5px solid ' + dm.inputBorder, cursor:'pointer', whiteSpace:'nowrap' };
+  }
+
+  filterCatChipStyle(cat) {
+    const active = this.state.filterCats.includes(cat);
+    const dm = this.dm;
+    return active
+      ? { display:'flex', alignItems:'center', height:'32px', borderRadius:'16px', padding:'0 14px', background:'#1A4C8C', color:'white', fontSize:'12px', fontFamily:"'Sora',-apple-system,system-ui", fontWeight:'600', cursor:'pointer', whiteSpace:'nowrap' }
+      : { display:'flex', alignItems:'center', height:'32px', borderRadius:'16px', padding:'0 14px', background:dm.inputBg, color:dm.text1, fontSize:'12px', fontFamily:"'Sora',-apple-system,system-ui", fontWeight:'500', border:'1.5px solid ' + dm.inputBorder, cursor:'pointer', whiteSpace:'nowrap' };
+  }
+
+  renderVals() {
+    const s   = this.state;
+    const dm  = this.dm;
+    const pin = s.selectedPin;
+    const sp  = pin ? this.statusProps(pin.status) : null;
+    const urgLabels = { alta:'Alta urgência', media:'Média urgência', baixa:'Baixa urgência' };
+    const urgHints  = { baixa:'Problema sem risco imediato, mas que precisa de atenção.', media:'Problema que pode se agravar ou afetar muitas pessoas.', alta:'Risco imediato à segurança ou saúde pública.' };
+    const statusLabels = { all:'Todos', open:'Abertos', resolved:'Resolvidos' };
+    const nextStatus   = { all:'open', open:'resolved', resolved:'all' };
+    const statusFgMap  = { all: dm.text1, open:'#60A5FA', resolved:'#22C55E' };
+    const statusBgMap  = { all: dm.glass, open:'rgba(26,76,140,.18)', resolved:'rgba(34,197,94,.14)' };
+    const votes    = pin ? pin.votes : 0;
+    const highCred = votes >= 10;
+    const pct      = Math.min(100, Math.round(votes / 25 * 100));
+    const conf     = s.confirmData || {};
+    const urgColorMap = { baixa:'#22C55E', media:'#F59E0B', alta:'#DC3545' };
+    const urgBgMap    = { baixa:'rgba(34,197,94,.14)', media:'rgba(245,158,11,.14)', alta:'rgba(220,53,69,.14)' };
+    const urgLabelMap = { baixa:'Baixa urgência', media:'Média urgência', alta:'Alta urgência' };
+    const dists   = ['230m','480m','720m','1.1km','1.8km','2.4km','3.2km','4.7km'];
+    const urgBgV  = { alta:'rgba(220,53,69,.14)', media:'rgba(245,158,11,.14)', baixa:'rgba(34,197,94,.14)' };
+    const urgColV = { alta:'#DC3545', media:'#F59E0B', baixa:'#22C55E' };
+    const dark    = s.darkMode;
+    const notifOn = s.notifEnabled;
+    const fc      = s.filterCats;
+
+    return {
+      // Dark mode
+      dm,
+      darkMode:        dark,
+      mapGlassStyle:   'background:' + dm.glass + ';backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:0.5px solid ' + dm.glassBorder,
+      dockStyle:       'background:' + dm.dockGlass + ';backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:0.5px solid ' + dm.glassBorder,
+      darkModeBg:      dark ? '#1A4C8C' : '#F3F4F6',
+      darkModeIcon:    dark ? 'white'   : '#6B7280',
+      darkModeHint:    dark ? 'Interface escura ativada' : 'Interface com fundo claro',
+      toggleDarkMode:  () => this.setState({ darkMode: !dark }),
+      darkToggleStyle: { width:'44px', height:'26px', borderRadius:'13px', background: dark ? '#1A4C8C' : '#E5E7EB', padding:'3px', display:'flex', alignItems:'center', justifyContent: dark ? 'flex-end' : 'flex-start', cursor:'pointer' },
+      darkThumbStyle:  { width:'20px', height:'20px', borderRadius:'50%', background:'white', boxShadow:'0 1px 3px rgba(0,0,0,.2)' },
+
+      // Pin visibility
+      showPin1: this.pinVisible(1), showPin2: this.pinVisible(2),
+      showPin3: this.pinVisible(3), showPin4: this.pinVisible(4),
+      showPin5: this.pinVisible(5), showPin6: this.pinVisible(6),
+      showPin7: this.pinVisible(7), showPin8: this.pinVisible(8),
+
+      // Screens
+      showSheet:         pin !== null,
+      showForm:          s.screen === 'form',
+      showConfirmation:  s.screen === 'confirmation',
+      showNearby:        s.screen === 'nearby',
+      showProfile:       s.screen === 'profile',
+      showEditProfile:   s.screen === 'editProfile',
+      showNotifications: s.screen === 'notifications',
+
+      // Urgency filter chips
+      filterStyleAlta:  this.filterChipStyle('alta'),
+      filterStyleMedia: this.filterChipStyle('media'),
+      filterStyleBaixa: this.filterChipStyle('baixa'),
+      setFilterAlta:    () => this.setState({ filter: s.filter === 'alta'  ? 'all' : 'alta'  }),
+      setFilterMedia:   () => this.setState({ filter: s.filter === 'media' ? 'all' : 'media' }),
+      setFilterBaixa:   () => this.setState({ filter: s.filter === 'baixa' ? 'all' : 'baixa' }),
+
+      // Status filter
+      filterStatusLabel: statusLabels[s.filterStatus],
+      filterStatusStyle: { height:'32px', borderRadius:'16px', padding:'0 14px', background:statusBgMap[s.filterStatus], color:statusFgMap[s.filterStatus], fontSize:'12px', fontFamily:"'Sora',-apple-system,system-ui", fontWeight:'600', display:'flex', alignItems:'center', cursor:'pointer', backdropFilter:'blur(14px)', WebkitBackdropFilter:'blur(14px)', border:'0.5px solid ' + dm.glassBorder, boxShadow:'0 1px 8px rgba(0,0,0,.1)', whiteSpace:'nowrap' },
+      cycleStatus:       () => this.setState({ filterStatus: nextStatus[s.filterStatus] }),
+
+      // Category filter
+      showCatFilter:  s.showCatFilter,
+      openCatFilter:  () => this.setState({ showCatFilter: true }),
+      closeCatFilter: () => this.setState({ showCatFilter: false }),
+      catFilterLabel: fc.length === 0 ? 'Categoria' : fc.length === 1 ? fc[0] : fc.length + ' cats',
+      catFilterBtnStyle: { height:'32px', borderRadius:'16px', padding:'0 12px', background: fc.length > 0 ? 'rgba(26,76,140,.18)' : dm.glass, color: fc.length > 0 ? '#60A5FA' : dm.text1, fontSize:'12px', fontFamily:"'Sora',-apple-system,system-ui", fontWeight: fc.length > 0 ? '600' : '500', display:'flex', alignItems:'center', gap:'5px', cursor:'pointer', backdropFilter:'blur(14px)', WebkitBackdropFilter:'blur(14px)', border:'0.5px solid ' + dm.glassBorder, boxShadow:'0 1px 8px rgba(0,0,0,.1)', whiteSpace:'nowrap' },
+      catFilterChips: ['Pavimentação','Iluminação','Esgoto','Abastecimento de Água','Coleta de Lixo','Meio Ambiente','Outros'].map(cat => ({
+        label: cat, style: this.filterCatChipStyle(cat),
+        toggle: () => this.setState({ filterCats: s.filterCats.includes(cat) ? s.filterCats.filter(c => c !== cat) : [...s.filterCats, cat] }),
+      })),
+
+      // Pin detail
+      pinLabel:        pin ? pin.label    : '',
+      pinAddress:      pin ? pin.address  : '',
+      pinDesc:         pin ? pin.desc     : '',
+      pinStatus:       pin ? pin.status   : '',
+      pinVotes:        votes,
+      pinTime:         pin ? pin.time     : '',
+      pinColor:        pin ? pin.color    : '#DC3545',
+      pinUrgencyLabel: pin ? urgLabels[pin.urgency] : '',
+      pinCategory:     pin ? pin.category : '',
+      statusColor:     sp ? sp.color : '#9CA3AF',
+      statusBg:        sp ? sp.bg    : 'rgba(107,114,128,.1)',
+      pinVotePct:      pct + '%',
+      pinCredBg:       highCred ? '#F59E0B' : '#1A4C8C',
+      pinCredColor:    highCred ? '#F59E0B' : '#60A5FA',
+      pinHighCredLabel:highCred ? ' · Alta credibilidade ★' : '',
+
+      openPin1: () => this.setState({ selectedPin: this.pinData(1) }),
+      openPin2: () => this.setState({ selectedPin: this.pinData(2) }),
+      openPin3: () => this.setState({ selectedPin: this.pinData(3) }),
+      openPin4: () => this.setState({ selectedPin: this.pinData(4) }),
+      openPin5: () => this.setState({ selectedPin: this.pinData(5) }),
+      openPin6: () => this.setState({ selectedPin: this.pinData(6) }),
+      openPin7: () => this.setState({ selectedPin: this.pinData(7) }),
+      openPin8: () => this.setState({ selectedPin: this.pinData(8) }),
+      closeSheet: () => this.setState({ selectedPin: null }),
+
+      // Form
+      openForm:  () => this.setState({ screen:'form', selectedPin:null }),
+      closeForm: () => this.setState({ screen:'map' }),
+      submitForm: () => {
+        const num  = String(Math.floor(Math.random() * 9000 + 1000));
+        const data = { protocol:'#2026-' + num, cat: s.formCat || 'Outros', urg: s.formUrgency || 'baixa' };
+        this.setState({ screen:'confirmation', formCat:null, formUrgency:null, confirmData:data });
+      },
+      categories: ['Pavimentação','Iluminação','Esgoto','Abastecimento de Água','Coleta de Lixo','Meio Ambiente','Outros'].map(cat => ({
+        label: cat, chipStyle: this.catChipStyle(cat),
+        onClick: () => this.setState({ formCat: cat }),
+      })),
+      urgStyleBaixa: this.urgChipStyle('baixa'),
+      urgStyleMedia: this.urgChipStyle('media'),
+      urgStyleAlta:  this.urgChipStyle('alta'),
+      setUrgBaixa:   () => this.setState({ formUrgency: s.formUrgency === 'baixa' ? null : 'baixa' }),
+      setUrgMedia:   () => this.setState({ formUrgency: s.formUrgency === 'media' ? null : 'media' }),
+      setUrgAlta:    () => this.setState({ formUrgency: s.formUrgency === 'alta'  ? null : 'alta'  }),
+      urgHint:       s.formUrgency ? urgHints[s.formUrgency] : '',
+
+      // Confirmation
+      confirmProtocol: conf.protocol || '',
+      confirmCategory: conf.cat || '',
+      confirmUrgLabel: conf.urg ? urgLabelMap[conf.urg]  : '',
+      confirmUrgBg:    conf.urg ? urgBgMap[conf.urg]     : '',
+      confirmUrgColor: conf.urg ? urgColorMap[conf.urg]  : '',
+      confirmToMap:    () => this.setState({ screen:'map', confirmData:null }),
+
+      // Nearby
+      openNearby:  () => this.setState({ screen:'nearby', selectedPin:null }),
+      closeNearby: () => this.setState({ screen:'map' }),
+      nearbyReports: [1,2,3,4,5,6,7,8].map((id, i) => {
+        const p = this.pinData(id);
+        return { label:p.label, category:p.category, dist:dists[i], urgBg:urgBgV[p.urgency], urgColor:urgColV[p.urgency], icon:this.categoryIcon(p.category, urgColV[p.urgency]), open:() => this.setState({ screen:'map', selectedPin:p }) };
+      }),
+
+      // Profile
+      openProfile:      () => this.setState({ screen:'profile',    selectedPin:null }),
+      closeProfile:     () => this.setState({ screen:'map' }),
+      openEditProfile:  () => this.setState({ screen:'editProfile' }),
+      closeEditProfile: () => this.setState({ screen:'profile' }),
+      profileReports: [
+        { label:'Buraco na calçada',  address:'R. das Flores, 142', status:'Resolvido', badgeStyle: this.badgeStyle('rgba(34,197,94,.14)', '#22C55E') },
+        { label:'Iluminação pública', address:'Av. Paulista, 890',  status:'Aberto',    badgeStyle: this.badgeStyle('rgba(26,76,140,.18)', '#60A5FA') },
+        { label:'Lixo acumulado',     address:'R. Augusta, 210',    status:'Aberto',    badgeStyle: this.badgeStyle('rgba(26,76,140,.18)', '#60A5FA') },
+      ],
+
+      // Notification toggle
+      toggleNotif:      () => this.setState({ notifEnabled: !notifOn }),
+      notifToggleStyle: { width:'44px', height:'26px', borderRadius:'13px', background: notifOn ? '#1A4C8C' : '#E5E7EB', padding:'3px', display:'flex', alignItems:'center', justifyContent: notifOn ? 'flex-end' : 'flex-start', cursor:'pointer' },
+      notifThumbStyle:  { width:'20px', height:'20px', borderRadius:'50%', background:'white', boxShadow:'0 1px 3px rgba(0,0,0,.2)' },
+
+      // Notifications screen
+      openNotifications:  () => this.setState({ screen:'notifications', selectedPin:null }),
+      closeNotifications: () => this.setState({ screen:'map' }),
+      notifications: [
+        { title:'Protocolo #2026-0341 resolvido',     desc:'Seu reporte de Pavimentação na Rua das Flores foi marcado como resolvido.',  time:'Agora',    dotStyle:{ width:'10px', height:'10px', borderRadius:'50%', background:'#22C55E', flexShrink:0, marginTop:'3px' }, unreadStyle:{ width:'8px', height:'8px', borderRadius:'50%', background:'#60A5FA', flexShrink:0, marginTop:'4px' } },
+        { title:'7 cidadãos confirmaram seu reporte', desc:'Seu reporte de Iluminação na Av. Paulista, 890 recebeu 7 confirmações.',     time:'3h atrás', dotStyle:{ width:'10px', height:'10px', borderRadius:'50%', background:'#F59E0B', flexShrink:0, marginTop:'3px' }, unreadStyle:{ width:'8px', height:'8px', borderRadius:'50%', background:'#60A5FA', flexShrink:0, marginTop:'4px' } },
+        { title:'Novo reporte próximo a você',        desc:'Alagamento na R. Vergueiro, 345 — Alta urgência, a 500m da sua localização.',time:'5h atrás', dotStyle:{ width:'10px', height:'10px', borderRadius:'50%', background:'#DC3545', flexShrink:0, marginTop:'3px' }, unreadStyle:{} },
+        { title:'Protocolo #2026-0298 encaminhado',   desc:'Coleta de Lixo na R. Augusta foi encaminhado ao setor responsável.',         time:'1d atrás', dotStyle:{ width:'10px', height:'10px', borderRadius:'50%', background:'#1A4C8C', flexShrink:0, marginTop:'3px' }, unreadStyle:{} },
+        { title:'Atualização de status',              desc:'Reporte de Pavimentação na R. da Consolação está sendo analisado.',          time:'2d atrás', dotStyle:{ width:'10px', height:'10px', borderRadius:'50%', background:'#1A4C8C', flexShrink:0, marginTop:'3px' }, unreadStyle:{} },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
