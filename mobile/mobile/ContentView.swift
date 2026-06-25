@@ -4,8 +4,15 @@
 import SwiftUI
 
 struct ContentView: View {
+    @AppStorage("darkModeEnabled") private var darkModeEnabled = false
+
     var body: some View {
         TabView {
+            MapScreenView()
+                .tabItem {
+                    Label("Mapa", systemImage: "map")
+                }
+
             ReportsListView()
                 .tabItem {
                     Label("Reportes", systemImage: "list.bullet.clipboard")
@@ -16,6 +23,7 @@ struct ContentView: View {
                     Label("Perfil", systemImage: "person.circle")
                 }
         }
+        .preferredColorScheme(darkModeEnabled ? .dark : .light)
     }
 }
 
@@ -367,6 +375,7 @@ struct CreateReportView: View {
         )
         do {
             let created = try await ReportService.shared.create(report)
+            MyReportsRegistryService.shared.markCreated(created.id)
             onCreated(created)
             dismiss()
         } catch {
@@ -456,96 +465,6 @@ struct EditReportView: View {
         } catch {
             errorMessage = error.localizedDescription
             isSaving = false
-        }
-    }
-}
-
-// MARK: - Perfil
-
-struct ProfileView: View {
-    @State private var name = ""
-    @State private var email = ""
-    @State private var pushEnabled = true
-    @State private var isLoading = false
-    @State private var isSaving = false
-    @State private var message: String?
-    @State private var isError = false
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section("Dados pessoais") {
-                    TextField("Nome", text: $name)
-                    TextField("E-mail", text: $email)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                }
-                Section("Preferências") {
-                    Toggle("Notificações push", isOn: $pushEnabled)
-                }
-                Section("Dispositivo") {
-                    LabeledContent("ID", value: UserProfileService.shared.deviceID)
-                        .font(.caption)
-                }
-                if let msg = message {
-                    Section {
-                        Text(msg)
-                            .font(.caption)
-                            .foregroundStyle(isError ? .red : .green)
-                    }
-                }
-                Section {
-                    Button("Salvar perfil") { Task { await save() } }
-                        .disabled(isSaving)
-
-                    Button("Excluir perfil", role: .destructive) {
-                        Task { await delete() }
-                    }
-                }
-            }
-            .navigationTitle("Perfil")
-            .task { await load() }
-        }
-    }
-
-    private func load() async {
-        isLoading = true
-        do {
-            if let profile = try await UserProfileService.shared.fetchMine() {
-                name = profile.name
-                email = profile.email
-                pushEnabled = profile.pushNotificationsEnabled
-            }
-        } catch {
-            // perfil ainda não existe, tudo bem
-        }
-        isLoading = false
-    }
-
-    private func save() async {
-        isSaving = true
-        message = nil
-        let profile = UserProfile(name: name, email: email, pushNotificationsEnabled: pushEnabled)
-        do {
-            _ = try await UserProfileService.shared.create(profile)
-            message = "Perfil salvo com sucesso!"
-            isError = false
-        } catch {
-            message = error.localizedDescription
-            isError = true
-        }
-        isSaving = false
-    }
-
-    private func delete() async {
-        do {
-            try await UserProfileService.shared.delete()
-            name = ""; email = ""; pushEnabled = true
-            message = "Perfil excluído."
-            isError = false
-        } catch {
-            message = error.localizedDescription
-            isError = true
         }
     }
 }
