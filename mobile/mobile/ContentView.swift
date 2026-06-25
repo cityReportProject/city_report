@@ -525,22 +525,47 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     }
     
     func requestLocation() async throws -> CLLocation {
-        // Verifica e solicita permissão se necessário
-        let status = manager.authorizationStatus
-        if status == .notDetermined {
-            manager.requestWhenInUseAuthorization()
-        }
-        
-        guard status == .authorizedWhenInUse || status == .authorizedAlways else {
-            throw LocationError.notAuthorized
-        }
-        
-        return try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { continuation in
             self.continuation = continuation
-            manager.requestLocation()
+
+            switch manager.authorizationStatus {
+            case .notDetermined:
+                // Não decide nada aqui — só dispara o prompt do sistema.
+                // A resposta do usuário chega depois em locationManagerDidChangeAuthorization,
+                // que resolve essa mesma continuation.
+                manager.requestWhenInUseAuthorization()
+            case .authorizedWhenInUse, .authorizedAlways:
+                manager.requestLocation()
+            case .denied, .restricted:
+                continuation.resume(throwing: LocationError.notAuthorized)
+                self.continuation = nil
+            @unknown default:
+                continuation.resume(throwing: LocationError.notAuthorized)
+                self.continuation = nil
+            }
         }
     }
-    
+
+    // Chamado pelo sistema quando o usuário responde ao prompt de permissão
+    // (ou na primeira inicialização, reportando o status atual).
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        Task { @MainActor in
+            // Só age se houver uma requestLocation() pendente — evita
+            // disparar uma busca de localização não solicitada.
+            guard continuation != nil else { return }
+
+            switch manager.authorizationStatus {
+            case .authorizedWhenInUse, .authorizedAlways:
+                manager.requestLocation()
+            case .denied, .restricted:
+                continuation?.resume(throwing: LocationError.notAuthorized)
+                continuation = nil
+            default:
+                break // ainda .notDetermined — continua esperando
+            }
+        }
+    }
+
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.first else { return }
         Task { @MainActor in
@@ -548,7 +573,7 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
             continuation = nil
         }
     }
-    
+
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         Task { @MainActor in
             continuation?.resume(throwing: error)
