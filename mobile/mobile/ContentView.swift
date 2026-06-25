@@ -1,5 +1,6 @@
 // ContentView.swift
-// Navegação principal do app — TabView com Mapa, Reportes e Perfil
+// ContentView.swift
+// Navegação principal do app — MapScreenView com dock personalizado
 
 import SwiftUI
 
@@ -7,23 +8,8 @@ struct ContentView: View {
     @AppStorage("darkModeEnabled") private var darkModeEnabled = false
 
     var body: some View {
-        TabView {
-            MapScreenView()
-                .tabItem {
-                    Label("Mapa", systemImage: "map")
-                }
-
-            ReportsListView()
-                .tabItem {
-                    Label("Reportes", systemImage: "list.bullet.clipboard")
-                }
-
-            ProfileView()
-                .tabItem {
-                    Label("Perfil", systemImage: "person.circle")
-                }
-        }
-        .preferredColorScheme(darkModeEnabled ? .dark : .light)
+        MapScreenView()
+            .preferredColorScheme(darkModeEnabled ? .dark : .light)
     }
 }
 
@@ -34,6 +20,7 @@ struct ReportsListView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var showingCreate = false
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
@@ -81,6 +68,14 @@ struct ReportsListView: View {
             }
             .navigationTitle("Reportes")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showingCreate = true
@@ -88,7 +83,7 @@ struct ReportsListView: View {
                         Image(systemName: "plus")
                     }
                 }
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         Task { await loadReports() }
                     } label: {

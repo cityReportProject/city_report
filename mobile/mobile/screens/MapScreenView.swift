@@ -14,12 +14,14 @@ struct MapScreenView: View {
     @State private var selectedReport: Report?
     @State private var showingCreate = false
     @State private var showingProfile = false
+    @State private var showingReportsList = false
     @State private var showingCategorySheet = false
     @State private var showingNearby = false
     @State private var searchText = ""
 
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var mapStyle: MapStyle = .standard
+    @State private var isStandardMapStyle = true
 
     @State private var urgencyFilter: Set<UrgencyLevel> = []
     @State private var statusFilter: StatusFilter = .open
@@ -56,6 +58,9 @@ struct MapScreenView: View {
         .sheet(isPresented: $showingProfile) {
             ProfileView()
         }
+        .fullScreenCover(isPresented: $showingReportsList) {
+            ReportsListView()
+        }
         .sheet(isPresented: $showingCategorySheet) {
             categoryFilterSheet
         }
@@ -89,8 +94,6 @@ struct MapScreenView: View {
                 SearchBarView(text: $searchText)
                 GlassIconButton(systemImage: "bell.fill", badge: true, action: {})
             }
-
-            UrgencyLegend()
 
             HStack(spacing: 8) {
                 ForEach(UrgencyLevel.allCases, id: \.self) { level in
@@ -133,8 +136,14 @@ struct MapScreenView: View {
         VStack(spacing: 14) {
             Spacer()
             HStack {
-                GlassIconButton(systemImage: "list.bullet") {
-                    showingNearby = true
+                VStack(spacing: 10) {
+                    GlassIconButton(systemImage: "list.bullet") {
+                        showingNearby = true
+                    }
+                    GlassIconButton(systemImage: "square.2.layers.3d") {
+                        isStandardMapStyle.toggle()
+                        mapStyle = isStandardMapStyle ? .standard : .imagery(elevation: .realistic)
+                    }
                 }
                 Spacer()
                 GlassIconButton(systemImage: "location.fill") {
@@ -149,8 +158,8 @@ struct MapScreenView: View {
 
     private var dock: some View {
         HStack(spacing: 20) {
-            DockIconButton(systemImage: "square.2.layers.3d") {
-                mapStyle = (mapStyle == .standard) ? .imagery(elevation: .realistic) : .standard
+            DockIconButton(systemImage: "list.bullet.clipboard") {
+                showingReportsList = true
             }
 
             Button {
