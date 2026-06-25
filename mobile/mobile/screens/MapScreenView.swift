@@ -19,9 +19,14 @@ struct MapScreenView: View {
     @State private var showingNearby = false
     @State private var searchText = ""
 
-    @State private var cameraPosition: MapCameraPosition = .automatic
+    @State private var cameraPosition: MapCameraPosition = .region(MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: -5.062429, longitude: -42.794596),
+        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+    ))
     @State private var mapStyle: MapStyle = .standard
     @State private var isStandardMapStyle = true
+    
+    @State private var userLocation: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: -5.062429, longitude: -42.794596)
 
     @State private var urgencyFilter: Set<UrgencyLevel> = []
     @State private var statusFilter: StatusFilter = .open
@@ -74,6 +79,23 @@ struct MapScreenView: View {
 
     private var mapLayer: some View {
         Map(position: $cameraPosition) {
+            // Marcador da localização do usuário
+            Annotation("Sua localização", coordinate: userLocation) {
+                ZStack {
+                    Circle()
+                        .fill(Color.blue.opacity(0.2))
+                        .frame(width: 60, height: 60)
+                    Circle()
+                        .fill(Color.blue)
+                        .frame(width: 16, height: 16)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white, lineWidth: 3)
+                        )
+                }
+            }
+            
+            // Pins dos reportes
             ForEach(filteredReports) { report in
                 Annotation(report.category.label, coordinate: CLLocationCoordinate2D(
                     latitude: report.location.latitude,
@@ -147,7 +169,11 @@ struct MapScreenView: View {
                 }
                 Spacer()
                 GlassIconButton(systemImage: "location.fill") {
-                    cameraPosition = .automatic
+                    // Centralizar no usuário
+                    cameraPosition = .region(MKCoordinateRegion(
+                        center: userLocation,
+                        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+                    ))
                 }
             }
             dock
