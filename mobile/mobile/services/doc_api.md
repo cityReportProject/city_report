@@ -1,22 +1,31 @@
-# Node-RED — Endpoints esperados pelo app Swift
+# Services Swift ↔ Node-RED — não é uma API REST
 
-Configure os flows abaixo no seu Node-RED para que os services Swift funcionem corretamente.
-Todos retornam e recebem `application/json` com datas em formato **ISO 8601**.
+A UI (SwiftUI) nunca fala HTTP diretamente. Ela chama métodos de `ReportService`,
+`UserProfileService` e `VoteRegistryService`. Esses services é que conversam com o
+Node-RED — e fazem isso com **chamadas estilo RPC** (um endpoint por ação, verbo no
+path), não com rotas REST por recurso (`/reports/:id`, `PUT/PATCH` semânticos, etc.).
+Quem decide regra de negócio (incrementar voto, marcar resolvido) é o app — o
+Node-RED só persiste o objeto `Report`/`UserProfileRecord` que recebe.
+
+Todos os endpoints recebem e retornam `application/json` com datas em **ISO 8601**.
 
 ---
 
-## Reports
+## ReportService
 
-| Método | Path | Descrição |
-|--------|------|-----------|
-| GET | `/reports` | Lista todos os reportes. Aceita query params opcionais: `?category=Esgoto&urgency=Alta&status=Aberto` |
-| GET | `/reports/:id` | Retorna um reporte pelo UUID |
-| POST | `/reports` | Cria novo reporte. Corpo: objeto `Report` completo |
-| PUT | `/reports/:id` | Atualiza reporte. Corpo: objeto `Report` completo |
-| DELETE | `/reports/:id` | Remove reporte. Resposta: 204 sem corpo |
-| POST | `/reports/:id/vote` | Incrementa `voteCount` em 1. Retorna o `Report` atualizado |
-| DELETE | `/reports/:id/vote` | Decrementa `voteCount` em 1. Retorna o `Report` atualizado |
-| PUT | `/reports/:id/resolve` | Marca como resolvido. Corpo: `{ "resolvedAt": "...", "resolutionComment": "..." }` |
+| Método Swift | Ação | Chamada real no Node-RED |
+|---|---|---|
+| `fetchAll() -> [Report]` | Lista todos os reportes | `GET /getreports` |
+| `create(_:) -> Report` | Cria reporte | `POST /postreport` — corpo: `Report` |
+| `update(_:) -> Report` | Atualiza reporte (qualquer campo) | `PUT /putreport` — corpo: `Report` |
+| `delete(id:)` | Remove reporte | `DELETE /deletereport` — corpo: `{ "id": "uuid" }` |
+| `vote(report:) -> Report` | `voteCount += 1` | reaproveita `PUT /putreport` |
+| `removeVote(report:) -> Report` | `voteCount -= 1` (mín. 0) | reaproveita `PUT /putreport` |
+| `resolve(report:comment:) -> Report` | `status = .resolved`, preenche `resolvedAt`/`resolutionComment` | reaproveita `PUT /putreport` |
+
+> `vote`, `removeVote` e `resolve` **não têm endpoint próprio**. O app monta o `Report`
+> já modificado em memória e envia inteiro por `PUT /putreport` — não crie
+> `/reports/:id/vote` nem `/reports/:id/resolve` no Node-RED, eles não são chamados.
 
 ### Exemplo de objeto Report (JSON)
 
@@ -42,18 +51,28 @@ Todos retornam e recebem `application/json` com datas em formato **ISO 8601**.
 
 ---
 
-## User Profiles
+## UserProfileService
 
-| Método | Path | Descrição |
-|--------|------|-----------|
-| GET | `/profiles/:deviceID` | Retorna o perfil do dispositivo |
-| PUT | `/profiles/:deviceID` | Cria ou substitui o perfil. Corpo: objeto `UserProfile` |
-| DELETE | `/profiles/:deviceID` | Remove o perfil. Resposta: 204 sem corpo |
+Como não há autenticação, o dispositivo é identificado por `deviceID`
+(`UIDevice.identifierForVendor`), embutido no payload — por isso o DTO trafegado
+não é `UserProfile` puro, é `UserProfileRecord` (`UserProfile` + `deviceID`).
 
-### Exemplo de objeto UserProfile (JSON)
+| Método Swift | Ação | Chamada real no Node-RED |
+|---|---|---|
+| `fetchAll() -> [UserProfileRecord]` | Lista todos os perfis | `GET /getuser` |
+| `fetchMine() -> UserProfile?` | Filtra `fetchAll()` pelo `deviceID` local | sem chamada própria — reaproveita `GET /getuser` |
+| `create(_:) -> UserProfileRecord` | Cria perfil | `POST /postuser` — corpo: `UserProfileRecord` |
+| `update(_:) -> UserProfileRecord` | Atualiza perfil | `PUT /putuser` — corpo: `UserProfileRecord` |
+| `delete()` | Remove perfil do dispositivo atual | `DELETE /deleteuser` — corpo: `{ "deviceID": "..." }` |
+
+> Não existe filtro por `deviceID` no Node-RED (`GET /profiles/:deviceID`) — o app
+> sempre busca a lista inteira (`/getuser`) e filtra localmente em `fetchMine()`.
+
+### Exemplo de objeto UserProfileRecord (JSON)
 
 ```json
 {
+  "deviceID": "3F2504E0-4F89-41D3-9A0C-0305E82C3301",
   "name": "João Silva",
   "email": "joao@email.com",
   "pushNotificationsEnabled": true
@@ -62,25 +81,37 @@ Todos retornam e recebem `application/json` com datas em formato **ISO 8601**.
 
 ---
 
+## VoteRegistryService
+
+100% local (não chama o Node-RED diretamente). Guarda em `UserDefaults` os IDs de
+reportes já votados pelo dispositivo (`hasVoted`, `vote`, `removeVote`) e só então
+delega a `ReportService.vote()`/`removeVote()`. Se a chamada de rede falhar, desfaz
+o registro local (rollback) — por isso o voto nunca fica "preso" em estado
+inconsistente entre o dispositivo e o Node-RED.
+
+---
+
 ## Dicas de configuração no Node-RED
 
-1. Use um nó **HTTP In** para cada endpoint.
-2. Conecte a um nó **Function** para tratar lógica (filtros, validação de ID).
+Configure 8 flows, um por endpoint — todos recebem o objeto inteiro (`Report` ou
+`UserProfileRecord`), nunca um path param:
+
+1. Use um nó **HTTP In** para cada endpoint (`/getreports`, `/postreport`,
+   `/putreport`, `/deletereport`, `/getuser`, `/postuser`, `/putuser`, `/deleteuser`).
+2. Conecte a um nó **Function** para tratar a lógica (ex: localizar pelo `id`/`deviceID` recebido no corpo).
 3. Use **node-red-contrib-sqlite** ou **node-red-node-mongodb** como banco de dados.
 4. Termine com um nó **HTTP Response** configurando `msg.statusCode` e `msg.payload`.
-5. Para DELETE com 204, defina `msg.statusCode = 204` e `msg.payload = ""`.
+5. Para DELETE, defina `msg.statusCode = 204` e `msg.payload = ""`.
 
-### Sugestão de flow para GET /reports com filtros
-
-```
-[HTTP In] → [Function: parseia query params e monta SQL/query] → [Database] → [Function: JSON.stringify] → [HTTP Response]
-```
-
-### Sugestão de flow para POST /reports/:id/vote
+### Sugestão de flow para PUT /putreport
 
 ```
-[HTTP In] → [Function: incrementa voteCount no banco] → [HTTP Response com Report atualizado]
+[HTTP In] → [Function: localiza pelo "id" do corpo e substitui o registro inteiro] → [Database] → [HTTP Response com Report atualizado]
 ```
+
+Como `vote`, `removeVote` e `resolve` reaproveitam este mesmo flow (o app já manda o
+`Report` com `voteCount`/`status` modificados), não é preciso lógica extra aqui —
+o Node-RED só persiste o que recebeu.
 
 ---
 

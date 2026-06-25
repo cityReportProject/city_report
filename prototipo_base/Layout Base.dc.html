@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <style>
+    @keyframes pulse-loc {
+      0%,100% { box-shadow: 0 0 0 6px rgba(45,125,210,.22), 0 0 0 3px rgba(45,125,210,.35) }
+      50%      { box-shadow: 0 0 0 11px rgba(45,125,210,.06), 0 0 0 3px rgba(45,125,210,.35) }
+    }
+  </style>
+</helmet>
+
+<!-- ── Canvas header ── -->
+<div style="position:absolute;left:80px;top:22px;font:700 20px -apple-system;color:#0F172A;letter-spacing:-.5px">Layout Base — Mapa com Ações</div>
+<div style="position:absolute;left:80px;top:50px;font:400 13px -apple-system;color:#64748B">App iOS · Perfil Cidadão · 3 variações de layout para escolha</div>
+
+<!-- ── Legenda urgência ── -->
+<div style="position:absolute;left:80px;top:1050px;display:flex;align-items:center;gap:20px">
+  <div style="display:flex;align-items:center;gap:6px;font:400 12px -apple-system;color:#6B7280"><div style="width:10px;height:10px;border-radius:50%;background:#DC3545"></div>Alta urgência</div>
+  <div style="display:flex;align-items:center;gap:6px;font:400 12px -apple-system;color:#6B7280"><div style="width:10px;height:10px;border-radius:50%;background:#F59E0B"></div>Média urgência</div>
+  <div style="display:flex;align-items:center;gap:6px;font:400 12px -apple-system;color:#6B7280"><div style="width:10px;height:10px;border-radius:50%;background:#22C55E"></div>Baixa urgência</div>
+  <div style="display:flex;align-items:center;gap:6px;font:400 12px -apple-system;color:#6B7280"><div style="width:10px;height:10px;border-radius:50%;background:#2D7DD2"></div>Minha localização</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     FRAME A — "Exploração" (search-forward, FAB)
+     ══════════════════════════════════════════════ -->
+<div style="position:absolute;left:80px;top:88px;width:402px">
+  <div data-drags-parent="1" style="position:absolute;top:-26px;left:0;font:600 11px -apple-system;color:rgba(26,76,140,.8);letter-spacing:.1em;text-transform:uppercase">A — Exploração</div>
+  <x-import component="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+    <div style="width:100%;height:100%;position:relative;overflow:hidden;background:linear-gradient(rgba(255,255,255,.82) 2px,transparent 2px) 0 0/60px 60px,linear-gradient(90deg,rgba(255,255,255,.82) 2px,transparent 2px) 0 0/60px 60px,linear-gradient(rgba(220,215,205,.45) 1px,transparent 1px) 0 0/20px 20px,linear-gradient(90deg,rgba(220,215,205,.45) 1px,transparent 1px) 0 0/20px 20px,#EDE8D8">
+
+      <!-- city blocks -->
+      <div style="position:absolute;left:28px;top:88px;width:96px;height:65px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:152px;top:93px;width:88px;height:80px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:265px;top:83px;width:108px;height:65px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:32px;top:200px;width:76px;height:72px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:160px;top:300px;width:110px;height:92px;background:rgba(168,210,158,.45);border-radius:3px"></div>
+      <div style="position:absolute;left:28px;top:355px;width:108px;height:78px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:282px;top:350px;width:100px;height:88px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:30px;top:475px;width:120px;height:70px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:192px;top:480px;width:80px;height:82px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:298px;top:468px;width:88px;height:90px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:0px;top:548px;width:68px;height:112px;background:rgba(163,194,220,.42);border-radius:0 3px 3px 0"></div>
+
+      <!-- pins red (alta) -->
+      <div style="position:absolute;left:88px;top:195px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))">
+        <div style="width:26px;height:26px;border-radius:50%;background:#DC3545;border:2.5px solid white"></div>
+        <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #DC3545;margin-top:-1px"></div>
+      </div>
+      <div style="position:absolute;left:310px;top:190px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))">
+        <div style="width:26px;height:26px;border-radius:50%;background:#DC3545;border:2.5px solid white"></div>
+        <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #DC3545;margin-top:-1px"></div>
+      </div>
+      <!-- pins yellow (média) -->
+      <div style="position:absolute;left:228px;top:218px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))">
+        <div style="width:26px;height:26px;border-radius:50%;background:#F59E0B;border:2.5px solid white"></div>
+        <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #F59E0B;margin-top:-1px"></div>
+      </div>
+      <div style="position:absolute;left:66px;top:375px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))">
+        <div style="width:26px;height:26px;border-radius:50%;background:#F59E0B;border:2.5px solid white"></div>
+        <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #F59E0B;margin-top:-1px"></div>
+      </div>
+      <div style="position:absolute;left:282px;top:438px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))">
+        <div style="width:26px;height:26px;border-radius:50%;background:#F59E0B;border:2.5px solid white"></div>
+        <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #F59E0B;margin-top:-1px"></div>
+      </div>
+      <!-- pins green (baixa) -->
+      <div style="position:absolute;left:168px;top:308px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))">
+        <div style="width:26px;height:26px;border-radius:50%;background:#22C55E;border:2.5px solid white"></div>
+        <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #22C55E;margin-top:-1px"></div>
+      </div>
+      <div style="position:absolute;left:352px;top:360px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))">
+        <div style="width:26px;height:26px;border-radius:50%;background:#22C55E;border:2.5px solid white"></div>
+        <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #22C55E;margin-top:-1px"></div>
+      </div>
+      <!-- user location dot -->
+      <div style="position:absolute;left:188px;top:450px;width:20px;height:20px;border-radius:50%;background:#2D7DD2;border:3px solid white;animation:pulse-loc 2.2s ease-in-out infinite"></div>
+
+      <!-- SEARCH BAR -->
+      <div style="position:absolute;left:16px;right:16px;top:72px;height:50px;background:white;border-radius:25px;box-shadow:0 2px 16px rgba(0,0,0,.14);display:flex;align-items:center;padding:0 8px 0 16px;gap:8px;z-index:10">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span style="flex:1;color:#9CA3AF;font-size:15px;font-family:-apple-system,system-ui">Buscar endereço...</span>
+        <div style="width:36px;height:36px;border-radius:50%;background:#1A4C8C;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="white"></path></svg>
+        </div>
+      </div>
+
+      <!-- LOCATION BUTTON bottom-left -->
+      <div style="position:absolute;left:20px;bottom:58px;width:44px;height:44px;border-radius:50%;background:white;box-shadow:0 2px 10px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;z-index:10">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A4C8C" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>
+      </div>
+
+      <!-- FAB bottom-right -->
+      <div style="position:absolute;right:20px;bottom:50px;width:62px;height:62px;border-radius:50%;background:#1A4C8C;box-shadow:0 4px 20px rgba(26,76,140,.5);display:flex;align-items:center;justify-content:center;z-index:10">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      </div>
+
+    </div>
+  </x-import>
+  <div style="margin-top:16px;padding:14px 16px;background:white;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+    <div style="font:600 11px -apple-system;color:#1A4C8C;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Padrão "Exploração"</div>
+    <div style="display:flex;flex-direction:column;gap:4px;font:400 13px/1.55 -apple-system;color:#4B5563">
+      <div>→ Search bar proeminente — destaque para busca</div>
+      <div>→ FAB azul flutuante para criar novo reporte</div>
+      <div>→ Botão de recentralizar (inferior esquerdo)</div>
+      <div>→ Avatar do perfil embutido na barra de busca</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     FRAME B — "Painel Estruturado" (nav azul + dock)
+     ══════════════════════════════════════════════ -->
+<div style="position:absolute;left:560px;top:88px;width:402px">
+  <div data-drags-parent="1" style="position:absolute;top:-26px;left:0;font:600 11px -apple-system;color:rgba(26,76,140,.8);letter-spacing:.1em;text-transform:uppercase">B — Painel Estruturado</div>
+  <x-import component="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+    <div style="width:100%;height:100%;position:relative;overflow:hidden;background:linear-gradient(rgba(255,255,255,.82) 2px,transparent 2px) 0 0/60px 60px,linear-gradient(90deg,rgba(255,255,255,.82) 2px,transparent 2px) 0 0/60px 60px,linear-gradient(rgba(220,215,205,.45) 1px,transparent 1px) 0 0/20px 20px,linear-gradient(90deg,rgba(220,215,205,.45) 1px,transparent 1px) 0 0/20px 20px,#EDE8D8">
+
+      <!-- city blocks (same) -->
+      <div style="position:absolute;left:28px;top:88px;width:96px;height:65px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:152px;top:93px;width:88px;height:80px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:265px;top:83px;width:108px;height:65px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:32px;top:200px;width:76px;height:72px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:160px;top:300px;width:110px;height:92px;background:rgba(168,210,158,.45);border-radius:3px"></div>
+      <div style="position:absolute;left:28px;top:355px;width:108px;height:78px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:282px;top:350px;width:100px;height:88px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:30px;top:475px;width:120px;height:70px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:192px;top:480px;width:80px;height:82px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:298px;top:468px;width:88px;height:90px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:0px;top:548px;width:68px;height:112px;background:rgba(163,194,220,.42);border-radius:0 3px 3px 0"></div>
+
+      <!-- pins red -->
+      <div style="position:absolute;left:88px;top:195px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#DC3545;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #DC3545;margin-top:-1px"></div></div>
+      <div style="position:absolute;left:310px;top:190px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#DC3545;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #DC3545;margin-top:-1px"></div></div>
+      <!-- pins yellow -->
+      <div style="position:absolute;left:228px;top:218px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#F59E0B;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #F59E0B;margin-top:-1px"></div></div>
+      <div style="position:absolute;left:66px;top:375px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#F59E0B;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #F59E0B;margin-top:-1px"></div></div>
+      <div style="position:absolute;left:282px;top:438px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#F59E0B;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #F59E0B;margin-top:-1px"></div></div>
+      <!-- pins green -->
+      <div style="position:absolute;left:168px;top:308px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#22C55E;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #22C55E;margin-top:-1px"></div></div>
+      <div style="position:absolute;left:352px;top:360px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#22C55E;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #22C55E;margin-top:-1px"></div></div>
+      <!-- user dot -->
+      <div style="position:absolute;left:188px;top:450px;width:20px;height:20px;border-radius:50%;background:#2D7DD2;border:3px solid white;animation:pulse-loc 2.2s ease-in-out infinite"></div>
+
+      <!-- BLUE NAV BAR -->
+      <div style="position:absolute;top:0;left:0;right:0;height:112px;background:linear-gradient(180deg,#1A4C8C 0%,#1E55A0 100%);z-index:10">
+        <div style="position:absolute;top:62px;left:0;right:0;display:flex;align-items:center;padding:0 16px;height:50px;gap:10px">
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </div>
+          <span style="flex:1;text-align:center;font:600 17px -apple-system;color:white;letter-spacing:-.3px">Reportes Urbanos</span>
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="white"></path></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEARCH BAR (below nav) -->
+      <div style="position:absolute;top:120px;left:16px;right:16px;height:44px;background:white;border-radius:22px;box-shadow:0 2px 10px rgba(0,0,0,.1);display:flex;align-items:center;padding:0 14px;gap:8px;z-index:9">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span style="flex:1;color:#9CA3AF;font-size:15px;font-family:-apple-system,system-ui">Buscar endereço...</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="7" y1="12" x2="17" y2="12"></line><line x1="10" y1="17" x2="14" y2="17"></line></svg>
+      </div>
+
+      <!-- BOTTOM DOCK PILL -->
+      <div style="position:absolute;bottom:50px;left:50%;transform:translateX(-50%);height:60px;background:white;border-radius:30px;box-shadow:0 4px 18px rgba(0,0,0,.16);display:flex;align-items:center;padding:0 10px;gap:4px;z-index:10">
+        <div style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A4C8C" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>
+        </div>
+        <div style="width:1px;height:28px;background:#E5E7EB"></div>
+        <div style="width:50px;height:50px;border-radius:50%;background:#1A4C8C;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(26,76,140,.38)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </div>
+        <div style="width:1px;height:28px;background:#E5E7EB"></div>
+        <div style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center">
+          <div style="width:32px;height:32px;border-radius:50%;background:#EBF2FF;display:flex;align-items:center;justify-content:center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#1A4C8C"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="#1A4C8C"></path></svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </x-import>
+  <div style="margin-top:16px;padding:14px 16px;background:white;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+    <div style="font:600 11px -apple-system;color:#1A4C8C;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Padrão "Painel Estruturado"</div>
+    <div style="display:flex;flex-direction:column;gap:4px;font:400 13px/1.55 -apple-system;color:#4B5563">
+      <div>→ Barra de navegação azul institucional no topo</div>
+      <div>→ Search com filtro de categoria logo abaixo</div>
+      <div>→ Dock inferior: localização · criar · perfil</div>
+      <div>→ Hierarquia clara entre chrome do app e mapa</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     FRAME C — "Imersivo" (edge-to-edge, liquid glass)
+     ══════════════════════════════════════════════ -->
+<div style="position:absolute;left:1040px;top:88px;width:402px">
+  <div data-drags-parent="1" style="position:absolute;top:-26px;left:0;font:600 11px -apple-system;color:rgba(26,76,140,.8);letter-spacing:.1em;text-transform:uppercase">C — Imersivo / Vidro</div>
+  <x-import component="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+    <div style="width:100%;height:100%;position:relative;overflow:hidden;background:linear-gradient(rgba(255,255,255,.82) 2px,transparent 2px) 0 0/60px 60px,linear-gradient(90deg,rgba(255,255,255,.82) 2px,transparent 2px) 0 0/60px 60px,linear-gradient(rgba(220,215,205,.45) 1px,transparent 1px) 0 0/20px 20px,linear-gradient(90deg,rgba(220,215,205,.45) 1px,transparent 1px) 0 0/20px 20px,#EDE8D8">
+
+      <!-- city blocks (same) -->
+      <div style="position:absolute;left:28px;top:88px;width:96px;height:65px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:152px;top:93px;width:88px;height:80px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:265px;top:83px;width:108px;height:65px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:32px;top:200px;width:76px;height:72px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:160px;top:300px;width:110px;height:92px;background:rgba(168,210,158,.45);border-radius:3px"></div>
+      <div style="position:absolute;left:28px;top:355px;width:108px;height:78px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:282px;top:350px;width:100px;height:88px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:30px;top:475px;width:120px;height:70px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:192px;top:480px;width:80px;height:82px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:298px;top:468px;width:88px;height:90px;background:rgba(210,204,192,.52);border-radius:2px"></div>
+      <div style="position:absolute;left:0px;top:548px;width:68px;height:112px;background:rgba(163,194,220,.42);border-radius:0 3px 3px 0"></div>
+
+      <!-- pins red -->
+      <div style="position:absolute;left:88px;top:195px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#DC3545;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #DC3545;margin-top:-1px"></div></div>
+      <div style="position:absolute;left:310px;top:190px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#DC3545;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #DC3545;margin-top:-1px"></div></div>
+      <!-- pins yellow -->
+      <div style="position:absolute;left:228px;top:218px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#F59E0B;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #F59E0B;margin-top:-1px"></div></div>
+      <div style="position:absolute;left:66px;top:375px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#F59E0B;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #F59E0B;margin-top:-1px"></div></div>
+      <div style="position:absolute;left:282px;top:438px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#F59E0B;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #F59E0B;margin-top:-1px"></div></div>
+      <!-- pins green -->
+      <div style="position:absolute;left:168px;top:308px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#22C55E;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #22C55E;margin-top:-1px"></div></div>
+      <div style="position:absolute;left:352px;top:360px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28))"><div style="width:26px;height:26px;border-radius:50%;background:#22C55E;border:2.5px solid white"></div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #22C55E;margin-top:-1px"></div></div>
+      <!-- user dot -->
+      <div style="position:absolute;left:188px;top:450px;width:20px;height:20px;border-radius:50%;background:#2D7DD2;border:3px solid white;animation:pulse-loc 2.2s ease-in-out infinite"></div>
+
+      <!-- GLASS SEARCH BAR (floating top) -->
+      <div style="position:absolute;left:16px;right:16px;top:72px;height:50px;background:rgba(255,255,255,.7);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);border-radius:25px;border:0.5px solid rgba(255,255,255,.85);box-shadow:0 2px 18px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.9);display:flex;align-items:center;padding:0 8px 0 16px;gap:8px;z-index:10">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span style="flex:1;color:#6B7280;font-size:15px;font-family:-apple-system,system-ui">Buscar endereço...</span>
+        <div style="width:36px;height:36px;border-radius:50%;background:#1A4C8C;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="white"></path></svg>
+        </div>
+      </div>
+
+      <!-- GLASS DOCK (floating bottom) -->
+      <div style="position:absolute;bottom:50px;left:50%;transform:translateX(-50%);height:66px;background:rgba(255,255,255,.7);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);border-radius:33px;border:0.5px solid rgba(255,255,255,.85);box-shadow:0 4px 22px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.9);display:flex;align-items:center;padding:0 12px;gap:6px;z-index:10">
+        <div style="width:46px;height:46px;border-radius:50%;background:rgba(26,76,140,.09);display:flex;align-items:center;justify-content:center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A4C8C" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>
+        </div>
+        <div style="width:54px;height:54px;border-radius:50%;background:#1A4C8C;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 14px rgba(26,76,140,.42)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </div>
+        <div style="width:46px;height:46px;border-radius:50%;background:rgba(26,76,140,.09);display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#1A4C8C"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="#1A4C8C"></path></svg>
+        </div>
+      </div>
+
+    </div>
+  </x-import>
+  <div style="margin-top:16px;padding:14px 16px;background:white;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+    <div style="font:600 11px -apple-system;color:#1A4C8C;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Padrão "Imersivo / Vidro"</div>
+    <div style="display:flex;flex-direction:column;gap:4px;font:400 13px/1.55 -apple-system;color:#4B5563">
+      <div>→ Mapa totalmente edge-to-edge, sem barra opaca</div>
+      <div>→ Busca com efeito liquid glass flutuante</div>
+      <div>→ Dock inferior compacto com 3 ações centrais</div>
+      <div>→ Estética iOS 26 — máxima área de mapa visível</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1560, &quot;height&quot;: 1120}}">
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

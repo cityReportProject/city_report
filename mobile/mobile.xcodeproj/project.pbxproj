@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		C05849F52FE49B3300178A47 /* mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C05849F52FE49B3300178A47 /* mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = mobile.app; path = "/Users/turma02-25/city_report/mobile/build/Debug-iphoneos/mobile.app"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -33,16 +33,7 @@
 			isa = PBXGroup;
 			children = (
 				C05849F72FE49B3300178A47 /* mobile */,
-				C05849F62FE49B3300178A47 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		C05849F62FE49B3300178A47 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				C05849F52FE49B3300178A47 /* mobile.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -95,7 +86,7 @@
 			mainGroup = C05849EC2FE49B3300178A47;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = C05849F62FE49B3300178A47 /* Products */;
+			productRefGroup = C05849EC2FE49B3300178A47;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
