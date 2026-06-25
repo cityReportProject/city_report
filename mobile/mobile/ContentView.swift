@@ -3,6 +3,7 @@
 // Navegação principal do app — MapScreenView com dock personalizado
 
 import SwiftUI
+import CoreLocation
 
 struct ContentView: View {
     @AppStorage("darkModeEnabled") private var darkModeEnabled = false
@@ -305,10 +306,11 @@ struct CreateReportView: View {
     @State private var category: ReportCategory = .other
     @State private var urgency: UrgencyLevel = .medium
     @State private var address = ""
-    @State private var latitude = ""
-    @State private var longitude = ""
+    @State private var latitude: Double?
+    @State private var longitude: Double?
     @State private var isSaving = false
     @State private var errorMessage: String?
+    @State private var isLoadingLocation = false
 
     var body: some View {
         NavigationStack {
@@ -331,10 +333,35 @@ struct CreateReportView: View {
                 }
                 Section("Localização") {
                     TextField("Endereço", text: $address)
-                    TextField("Latitude (ex: -5.0892)", text: $latitude)
-                        .keyboardType(.decimalPad)
-                    TextField("Longitude (ex: -42.8016)", text: $longitude)
-                        .keyboardType(.decimalPad)
+                    
+                    if let lat = latitude, let lng = longitude {
+                        HStack {
+                            Image(systemName: "location.fill")
+                                .foregroundStyle(.green)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Localização capturada")
+                                    .font(.subheadline)
+                                Text("Lat: \(lat, specifier: "%.6f"), Lng: \(lng, specifier: "%.6f")")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    
+                    Button {
+                        Task { await getCurrentLocation() }
+                    } label: {
+                        HStack {
+                            if isLoadingLocation {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            } else {
+                                Image(systemName: "location.fill")
+                            }
+                            Text(latitude == nil ? "Usar localização atual" : "Atualizar localização")
+                        }
+                    }
+                    .disabled(isLoadingLocation)
                 }
                 if let error = errorMessage {
                     Section {
@@ -350,17 +377,36 @@ struct CreateReportView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Salvar") { Task { await save() } }
-                        .disabled(isSaving || description.isEmpty)
+                        .disabled(isSaving || description.isEmpty || latitude == nil || longitude == nil)
                 }
             }
         }
     }
 
+    private func getCurrentLocation() async {
+        isLoadingLocation = true
+        errorMessage = nil
+        
+        do {
+            let locationManager = LocationManager()
+            let location = try await locationManager.requestLocation()
+            latitude = location.coordinate.latitude
+            longitude = location.coordinate.longitude
+        } catch {
+            errorMessage = "Não foi possível obter a localização: \(error.localizedDescription)"
+        }
+        
+        isLoadingLocation = false
+    }
+
     private func save() async {
+        guard let lat = latitude, let lng = longitude else {
+            errorMessage = "Por favor, capture a localização antes de salvar."
+            return
+        }
+        
         isSaving = true
         errorMessage = nil
-        let lat = Double(latitude.replacingOccurrences(of: ",", with: ".")) ?? 0
-        let lng = Double(longitude.replacingOccurrences(of: ",", with: ".")) ?? 0
         let report = Report(
             protocolNumber: "APP-\(Int(Date().timeIntervalSince1970))",
             description: description,
@@ -460,6 +506,64 @@ struct EditReportView: View {
         } catch {
             errorMessage = error.localizedDescription
             isSaving = false
+        }
+    }
+}
+
+// MARK: - LocationManager
+
+import CoreLocation
+
+@MainActor
+class LocationManager: NSObject, CLLocationManagerDelegate {
+    private let manager = CLLocationManager()
+    private var continuation: CheckedContinuation<CLLocation, Error>?
+    
+    override init() {
+        super.init()
+        manager.delegate = self
+    }
+    
+    func requestLocation() async throws -> CLLocation {
+        // Verifica e solicita permissão se necessário
+        let status = manager.authorizationStatus
+        if status == .notDetermined {
+            manager.requestWhenInUseAuthorization()
+        }
+        
+        guard status == .authorizedWhenInUse || status == .authorizedAlways else {
+            throw LocationError.notAuthorized
+        }
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            self.continuation = continuation
+            manager.requestLocation()
+        }
+    }
+    
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.first else { return }
+        Task { @MainActor in
+            continuation?.resume(returning: location)
+            continuation = nil
+        }
+    }
+    
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        Task { @MainActor in
+            continuation?.resume(throwing: error)
+            continuation = nil
+        }
+    }
+}
+
+enum LocationError: LocalizedError {
+    case notAuthorized
+    
+    var errorDescription: String? {
+        switch self {
+        case .notAuthorized:
+            return "Permissão de localização não concedida. Por favor, habilite nas Configurações."
         }
     }
 }

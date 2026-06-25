@@ -16,7 +16,6 @@ struct MapScreenView: View {
     @State private var showingProfile = false
     @State private var showingReportsList = false
     @State private var showingCategorySheet = false
-    @State private var showingNearby = false
     @State private var searchText = ""
 
     @State private var cameraPosition: MapCameraPosition = .region(MKCoordinateRegion(
@@ -31,6 +30,10 @@ struct MapScreenView: View {
     @State private var urgencyFilter: Set<UrgencyLevel> = []
     @State private var statusFilter: StatusFilter = .open
     @State private var categoryFilter: Set<ReportCategory> = []
+
+    // Notificações
+    @State private var showingNotifications = false
+    @State private var unreadCount: Int = 0
 
     private var filteredReports: [Report] {
         reports.filter { report in
@@ -69,10 +72,16 @@ struct MapScreenView: View {
         .sheet(isPresented: $showingCategorySheet) {
             categoryFilterSheet
         }
-        .sheet(isPresented: $showingNearby) {
-            NearbyReportsView()
+        .sheet(isPresented: $showingNotifications) {
+            NotificationsView()
         }
-        .task { await loadReports() }
+        .task {
+            await loadReports()
+            refreshUnreadCount()
+        }
+        .onAppear {
+            refreshUnreadCount()
+        }
     }
 
     // MARK: - Camadas
@@ -114,7 +123,12 @@ struct MapScreenView: View {
         VStack(spacing: 10) {
             HStack(spacing: 10) {
                 SearchBarView(text: $searchText)
-                GlassIconButton(systemImage: "bell.fill", badge: true, action: {})
+                GlassIconButton(systemImage: "bell.fill", badge: unreadCount > 0) {
+                    showingNotifications = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        refreshUnreadCount()
+                    }
+                }
             }
 
             HStack(spacing: 8) {
@@ -159,9 +173,7 @@ struct MapScreenView: View {
             Spacer()
             HStack {
                 VStack(spacing: 10) {
-                    GlassIconButton(systemImage: "list.bullet") {
-                        showingNearby = true
-                    }
+                    // Botão "Próximos a Você" removido
                     GlassIconButton(systemImage: "square.2.layers.3d") {
                         isStandardMapStyle.toggle()
                         mapStyle = isStandardMapStyle ? .standard : .imagery(elevation: .realistic)
@@ -288,6 +300,12 @@ struct MapScreenView: View {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+
+    // MARK: - Notificações helpers
+
+    private func refreshUnreadCount() {
+        unreadCount = NotificationService.shared.unreadCount()
     }
 }
 
