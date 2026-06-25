@@ -285,7 +285,7 @@ struct ReportDetailView: View {
         isDeleting = true
         errorMessage = nil
         do {
-            try await ReportService.shared.delete(id: report.id)
+            try await ReportService.shared.delete(report: report)
             onDelete(report.id)
             dismiss()
         } catch {
