@@ -39,28 +39,25 @@ final class ReportService {
     // em vez de travar o decode.
     // ----------------------------------------------------------
     func fetchAll() async throws -> [Report] {
-        let data = try await client.requestRaw(path: "/getreport", method: "GET")
+        let data = try await client.requestRaw(path: "/getreports", method: "GET")
 
         // --- Tentativa 1: array direto ---
-        // Formato mais comum quando o Node-RED processa e devolve a lista
         if let reports = try? client.decoder.decode([Report].self, from: data), !reports.isEmpty {
             return reports
         }
 
         // --- Tentativa 2: envelope Cloudant { rows: [{ doc: Report }] } ---
-        // Usado quando o flow retorna o resultado bruto da view do Cloudant
         if let envelope = try? client.decoder.decode(CloudantListResponse<Report>.self, from: data),
            !envelope.items.isEmpty {
             return envelope.items
         }
 
-        // --- Tentativa 3: array vazio (banco sem documentos) ---
-        // O decoder do array vai devolver [] sem erro — cobre o caso de banco vazio
+        // --- Tentativa 3: array vazio ---
         if let empty = try? client.decoder.decode([Report].self, from: data), empty.isEmpty {
             return []
         }
 
-        // --- Formato não reconhecido: mostra o JSON bruto para debug ---
+        // --- Formato não reconhecido ---
         let raw = String(data: data, encoding: .utf8) ?? "(binário não legível)"
         throw APIError.decodingFailed(
             NSError(domain: "ReportService", code: 0,
@@ -73,9 +70,9 @@ final class ReportService {
     // MARK: create — POST /postreport
     // ----------------------------------------------------------
     // Envia o Report SEM _id e _rev (o Cloudant os gera).
-    // Retorna o mesmo report enviado (otimista) porque o Cloudant
-    // não devolve o objeto — só { ok, id, rev }.
-    // O _id e _rev reais chegam no próximo fetchAll().
+    // Retorna o report com cloudantID/cloudantRev preenchidos
+    // a partir do CloudantWriteResponse (id/rev), permitindo
+    // editar/votar/excluir imediatamente após criar.
     // ----------------------------------------------------------
     @discardableResult
     func create(_ report: Report) async throws -> Report {
@@ -85,16 +82,22 @@ final class ReportService {
             body: report
         )
 
-        // Verifica confirmação do Cloudant
-        if let response = try? client.decoder.decode(CloudantWriteResponse.self, from: data),
-           !response.isOk {
+        // Decodifica confirmação do Cloudant e extrai id/rev
+        let response = try? client.decoder.decode(CloudantWriteResponse.self, from: data)
+        if let response, !response.isOk {
             throw APIError.decodingFailed(
                 NSError(domain: "ReportService", code: 0,
                         userInfo: [NSLocalizedDescriptionKey: "Cloudant não confirmou a gravação."])
             )
         }
 
-        return report
+        var created = report
+        if let result = response?.result {
+            created.cloudantID  = result.id
+            created.cloudantRev = result.rev
+        }
+
+        return created
     }
 
     // ----------------------------------------------------------
@@ -103,7 +106,8 @@ final class ReportService {
     // ATENÇÃO: o report DEVE ter cloudantID e cloudantRev.
     // Sem eles o Cloudant cria um documento novo (DUPLICATA).
     //
-    // Esses campos são preenchidos automaticamente no fetchAll().
+    // Esses campos são preenchidos automaticamente no fetchAll()
+    // e agora também no create().
     // Após o PUT, o Cloudant gera um novo _rev — atualizamos
     // cloudantRev localmente para o próximo update não precisar
     // de um novo fetchAll().
@@ -127,20 +131,17 @@ final class ReportService {
             body: report  // encode() inclui _id e _rev automaticamente
         )
 
-        // Verifica confirmação do Cloudant
-        if let response = try? client.decoder.decode(CloudantWriteResponse.self, from: data),
-           !response.isOk {
+        // Verifica confirmação do Cloudant e atualiza o _rev local com o novo
+        let response = try? client.decoder.decode(CloudantWriteResponse.self, from: data)
+        if let response, !response.isOk {
             throw APIError.decodingFailed(
                 NSError(domain: "ReportService", code: 0,
                         userInfo: [NSLocalizedDescriptionKey: "Cloudant não confirmou a atualização."])
             )
         }
 
-        // Atualiza o _rev local com o novo gerado pelo Cloudant
-        // Assim o próximo update usa o _rev correto sem fetchAll()
         var updated = report
-        if let response = try? client.decoder.decode(CloudantWriteResponse.self, from: data),
-           let newRev = response.rev {
+        if let newRev = response?.rev {
             updated.cloudantRev = newRev
         }
 
@@ -149,8 +150,6 @@ final class ReportService {
 
     // ----------------------------------------------------------
     // MARK: delete — DELETE /deletereport
-    // ----------------------------------------------------------
-    // Precisa de _id E _rev para o Cloudant aceitar a exclusão.
     // ----------------------------------------------------------
     func delete(report: Report) async throws {
         guard let cid = report.cloudantID, let crev = report.cloudantRev else {
@@ -199,23 +198,6 @@ final class ReportService {
         return try await update(r)
     }
 
-    // ----------------------------------------------------------
-    // MARK: addComment — adiciona comentário e faz PUT
-    // ----------------------------------------------------------
-
-    //@discardableResult
-    //func addComment(to report: Report, text: String, deviceID: String) async throws -> Report {
-    //    let comment = ReportComment(
-    //        id:        UUID(),
-    //        deviceID:  deviceID,
-    //        text:      text,
-    //        createdAt: Date()
-    //    )
-    //    var r = report
-    //    r.comments.append(comment)
-    //    return try await update(r)
-    //}
-    
     // ----------------------------------------------------------
     // MARK: addComment — adiciona comentário e faz PUT
     // ----------------------------------------------------------

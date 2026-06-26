@@ -1,7 +1,6 @@
 // MapScreenView.swift
 // Tela de Mapa Principal — fiel ao protótipo prototipo_base/Mapa Principal.dc.html
-// US07, US08, US09, US10, US12, US13, US17, US18 — chama ReportService.fetchAll()
-// e VoteRegistryService (ambos já existentes); filtros são client-side.
+// Agora usando dados mockados fixos gerados ao redor do centro do mapa.
 
 import SwiftUI
 import MapKit
@@ -26,6 +25,9 @@ struct MapScreenView: View {
     @State private var isStandardMapStyle = true
     
     @State private var userLocation: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: -5.062429, longitude: -42.794596)
+
+    // Centro atual do mapa (usado para gerar mocks ao redor)
+    @State private var mapCenter: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: -5.062429, longitude: -42.794596)
 
     @State private var urgencyFilter: Set<UrgencyLevel> = []
     @State private var statusFilter: StatusFilter = .open
@@ -60,6 +62,7 @@ struct MapScreenView: View {
         }
         .sheet(isPresented: $showingCreate) {
             CreateReportView { newReport in
+                // Insere o novo item no topo da lista atual de mocks
                 reports.insert(newReport, at: 0)
             }
         }
@@ -67,7 +70,8 @@ struct MapScreenView: View {
             ProfileView()
         }
         .fullScreenCover(isPresented: $showingReportsList) {
-            ReportsListView()
+            // Passa o centro atual do mapa para a lista gerar mocks próximos
+            ReportsListView(center: mapCenter)
         }
         .sheet(isPresented: $showingCategorySheet) {
             categoryFilterSheet
@@ -76,7 +80,7 @@ struct MapScreenView: View {
             NotificationsView()
         }
         .task {
-            await loadReports()
+            await regenerateReportsNearCenter()
             refreshUnreadCount()
         }
         .onAppear {
@@ -114,6 +118,11 @@ struct MapScreenView: View {
                         .onTapGesture { selectedReport = report }
                 }
             }
+        }
+        .onMapCameraChange(frequency: .onEnd) { context in
+            // Atualiza o centro e regenera os mocks quando o usuário termina de mover/zoom
+            mapCenter = context.region.center
+            Task { await regenerateReportsNearCenter() }
         }
         .mapStyle(mapStyle)
         .ignoresSafeArea()
@@ -173,7 +182,6 @@ struct MapScreenView: View {
             Spacer()
             HStack {
                 VStack(spacing: 10) {
-                    // Botão "Próximos a Você" removido
                     GlassIconButton(systemImage: "square.2.layers.3d") {
                         isStandardMapStyle.toggle()
                         mapStyle = isStandardMapStyle ? .standard : .imagery(elevation: .realistic)
@@ -232,7 +240,7 @@ struct MapScreenView: View {
                 bannerCard {
                     VStack(spacing: 8) {
                         Text(error).font(.caption).multilineTextAlignment(.center)
-                        Button("Tentar novamente") { Task { await loadReports() } }
+                        Button("Tentar novamente") { Task { await regenerateReportsNearCenter() } }
                             .font(.caption.bold())
                     }
                 }
@@ -291,14 +299,12 @@ struct MapScreenView: View {
         .presentationDetents([.medium])
     }
 
-    private func loadReports() async {
+    @MainActor
+    private func regenerateReportsNearCenter() async {
         isLoading = true
         errorMessage = nil
-        do {
-            reports = try await ReportService.shared.fetchAll()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        // Gera exatamente 10 reportes fixos próximos ao centro atual do mapa
+        reports = generateFixedReports(around: mapCenter)
         isLoading = false
     }
 
@@ -344,8 +350,6 @@ private struct StatusChip: View {
 }
 
 // MARK: - Helpers de seleção
-// (urgencyColor(_:) e as cores Color.urgency*/userBlue/brandDark moraram para ReportQuickLookView.swift,
-// já que agora são usadas por mais de uma tela)
 
 private func toggle<T: Hashable>(_ value: T, in set: inout Set<T>) {
     if set.contains(value) {
@@ -355,8 +359,7 @@ private func toggle<T: Hashable>(_ value: T, in set: inout Set<T>) {
     }
 }
 
-// MARK: - Pin do mapa
-// US14 — pins de reports com isHighCredibility ganham halo pulsante + ficam maiores
+// MARK: - Pin do mapa (inalterado)
 
 private struct ReportPinView: View {
     let report: Report
@@ -390,7 +393,7 @@ private struct ReportPinView: View {
     }
 }
 
-// MARK: - Search bar (visual — sem busca ligada ainda)
+// MARK: - Search bar
 
 private struct SearchBarView: View {
     @Binding var text: String
@@ -453,7 +456,7 @@ private struct FilterChip: View {
     }
 }
 
-// MARK: - Botões flutuantes de vidro (notificações, localização, lista)
+// MARK: - Botões flutuantes
 
 private struct GlassIconButton: View {
     let systemImage: String
@@ -480,7 +483,7 @@ private struct GlassIconButton: View {
     }
 }
 
-// MARK: - Botão do dock (Layers, Perfil)
+// MARK: - Botão do dock
 
 private struct DockIconButton: View {
     let systemImage: String
@@ -495,6 +498,74 @@ private struct DockIconButton: View {
                 .background(Color.userBlue.opacity(0.15), in: Circle())
         }
     }
+}
+
+// MARK: - Gerador de reportes mockados FIXOS
+
+private func generateFixedReports(around center: CLLocationCoordinate2D) -> [Report] {
+    // 10 deslocamentos fixos (em graus) ao redor do centro
+    // ~0.005 deg ≈ 550 m próximos ao equador; em Teresina fica parecido.
+    let offsets: [(Double, Double)] = [
+        ( 0.0000,  0.0000),
+        ( 0.0040,  0.0000),
+        (-0.0040,  0.0000),
+        ( 0.0000,  0.0040),
+        ( 0.0000, -0.0040),
+        ( 0.0030,  0.0030),
+        ( 0.0030, -0.0030),
+        (-0.0030,  0.0030),
+        (-0.0030, -0.0030),
+        ( 0.0050,  0.0015)
+    ]
+
+    let categories: [ReportCategory] = [
+        .pavement, .lighting, .sewage, .waterSupply, .wasteCollection,
+        .environment, .other, .pavement, .lighting, .sewage
+    ]
+
+    let urgencies: [UrgencyLevel] = [
+        .high, .medium, .low, .medium, .high, .low, .medium, .high, .low, .medium
+    ]
+
+    let descriptions: [String] = [
+        "Buraco na via principal",
+        "Poste apagado próximo à praça",
+        "Bueiro entupido na esquina",
+        "Falta d'água no quarteirão",
+        "Acúmulo de lixo em terreno",
+        "Queimada em terreno baldio",
+        "Sinalização precária na rua",
+        "Calçada quebrada em frente à escola",
+        "Lâmpada piscando no poste",
+        "Mau cheiro constante no bueiro"
+    ]
+
+    var result: [Report] = []
+    result.reserveCapacity(10)
+
+    for i in 0..<10 {
+        let lat = center.latitude  + offsets[i].0
+        let lng = center.longitude + offsets[i].1
+        let address = String(format: "Próximo a %.5f, %.5f", lat, lng)
+
+        let report = Report(
+            protocolNumber: String(format: "FIX-%04d", i + 1),
+            createdAt: Calendar.current.date(byAdding: .hour, value: -(i * 6), to: Date()) ?? Date(),
+            description: descriptions[i],
+            category: categories[i],
+            urgency: urgencies[i],
+            status: i % 4 == 0 ? .resolved : .open, // alguns resolvidos para variar
+            location: ReportLocation(latitude: lat, longitude: lng, address: address),
+            voteCount: i, // votos crescentes e determinísticos
+            comments: [],
+            resolvedAt: i % 4 == 0 ? Date().addingTimeInterval(-Double(i) * 3600) : nil,
+            resolutionComment: i % 4 == 0 ? "Resolvido pela equipe." : nil
+        )
+        result.append(report)
+    }
+
+    // Ordena por mais recentes primeiro (i=0 mais recente)
+    return result.sorted { $0.createdAt > $1.createdAt }
 }
 
 #Preview {
